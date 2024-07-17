@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build:tailwind": "ts-node tailwind.config.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -20,11 +21,14 @@
     "@aws-amplify/storage": "^6.5.0",
     "@aws-amplify/ui-react": "^6.1.13",
     "@aws-sdk/types": "^3.609.0",
+    "@heroicons/react": "^2.1.5",
     "@parcel/watcher": "^2.4.1",
     "@smithy/types": "^2.12.0",
+    "@vercel/postgres": "^0.9.0",
     "aws-amplify": "^6.4.0",
     "aws-cdk": "^2.149.0",
     "aws-cdk-lib": "^2.149.0",
+    "clsx": "^2.1.1",
     "constructs": "^10.3.0",
     "fast-xml-parser": "^4.4.0",
     "next": "13.5.4",
@@ -34,9 +38,14 @@
   "devDependencies": {
     "@aws-amplify/backend": "^1.0.0",
     "@aws-amplify/backend-cli": "^1.0.1",
+    "@tailwindcss/forms": "^0.5.7",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.39",
+    "tailwindcss": "^3.4.6",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.2"
   }
 }
