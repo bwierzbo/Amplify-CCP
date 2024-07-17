@@ -24,9 +24,9 @@ const schema = a.schema({
 
     Invoice: a.model({
       id: a.id(),
-      customer_id: a.string(),
+      customer_id: a.id(),
       amount: a.integer(),
-      date: a.string(),
+      date: a.date(),
       status: a.boolean(), 
     }).authorization((allow) => [allow.publicApiKey()]),
 
