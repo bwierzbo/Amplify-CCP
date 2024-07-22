@@ -67,3 +67,27 @@ export const generatePagination = (currentPage: number, totalPages: number) => {
     totalPages,
   ];
 };
+
+export const getLatestUniqueMonthlyRevenue = (revenue: Revenue[]): Revenue[] => {
+  // Sort the revenue data by createdAt in descending order
+  revenue.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  // Filter to get only the latest entry for each month
+  const uniqueMonthlyRevenue: { [month: string]: Revenue } = {};
+
+  for (const entry of revenue) {
+    const monthKey = entry.month.toLowerCase();
+    if (!uniqueMonthlyRevenue[monthKey]) {
+      uniqueMonthlyRevenue[monthKey] = entry;
+    }
+  }
+
+  // Sort the unique monthly revenue by month order
+  const monthOrder = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+  const sortedUniqueMonthlyRevenue = Object.values(uniqueMonthlyRevenue).sort(
+    (a, b) => monthOrder.indexOf(a.month.toLowerCase()) - monthOrder.indexOf(b.month.toLowerCase())
+  );
+
+  // Return the latest 12 unique monthly revenues
+  return sortedUniqueMonthlyRevenue.slice(0, 12);
+};

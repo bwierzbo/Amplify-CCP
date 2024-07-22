@@ -10,29 +10,29 @@ const schema = a.schema({
 
     User: a.model({
       id: a.id(),
-      name: a.string(),
-      email: a.email(),
-      password: a.string(),
+      name: a.string().required(),
+      email: a.email().required(),
+      password: a.string().required(),
   }).authorization((allow) => [allow.publicApiKey()]),
 
     Customer: a.model({
       id: a.id(),
-      name: a.string(),
-      email: a.email(),
-      image_url: a.string(),
+      name: a.string().required(),
+      email: a.email().required(),
+      image_url: a.string().required(),
     }).authorization((allow) => [allow.publicApiKey()]),
 
     Invoice: a.model({
       id: a.id(),
-      customer_id: a.id(),
-      amount: a.integer(),
-      date: a.date(),
-      status: a.boolean(), 
+      customer_id: a.id().required(),
+      amount: a.integer().required(),
+      date: a.date().required(),
+      status: a.boolean().required(),
     }).authorization((allow) => [allow.publicApiKey()]),
 
     Revenue: a.model({
-      month: a.string(),
-      revenue: a.integer(),
+      month: a.string().required(),
+      revenue: a.integer().required(),
     }).authorization((allow) => [allow.publicApiKey()]),
 
     Suppliers: a.model({

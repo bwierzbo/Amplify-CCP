@@ -4,13 +4,13 @@ import {
   CustomersTableType,
   InvoiceForm,
   InvoicesTable,
-  LatestInvoiceRaw,
 } from './definitions';
 import { formatCurrency } from './utils';
 import { generateClient } from 'aws-amplify/data';
 import { type Schema } from '@/amplify/data/resource';
 import outputs from '@/amplify_outputs.json'
 import { Amplify } from 'aws-amplify';
+import { createData } from '@/app/lib/placeholder-data'
 
 
 Amplify.configure(outputs)
@@ -19,12 +19,20 @@ Amplify.configure(outputs)
 const client = generateClient<Schema>();
 
 
+
+
 export async function fetchRevenue() {
   try {
-
-    const { data: revenue, errors } = await client.models.Revenue.list();
-    console.log(revenue)
-    return revenue;
+    const { data, errors } = await client.models.Revenue.list();
+    if (errors) {
+      console.error('Error fetching revenue:', errors);
+      throw new Error('Error fetching revenue data.');
+    }
+    return data.map( item => ({
+      month: item.month ?? '',
+      revenue: item.revenue ?? 0,
+      createdAt: item.createdAt,
+    }));
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch revenue data.');
@@ -33,18 +41,39 @@ export async function fetchRevenue() {
 
 export async function fetchLatestInvoices() {
   try {
-    const data = await sql<LatestInvoiceRaw>`
-      SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      ORDER BY invoices.date DESC
-      LIMIT 5`;
+    // Fetch invoices
+    const invoiceResponse = await client.models.Invoice.list();
+    const invoiceData = invoiceResponse.data;
+    const invoiceErrors = invoiceResponse.errors;
 
-    const latestInvoices = data.rows.map((invoice) => ({
-      ...invoice,
-      amount: formatCurrency(invoice.amount),
+    if (invoiceErrors) {
+      console.error('Error fetching invoices:', invoiceErrors);
+      throw new Error('Error fetching invoice data.');
+    }
+
+    // Fetch customer data for each invoice
+    const latestInvoices = await Promise.all(invoiceData.map(async (invoice) => {
+      const customerResponse = await client.models.Customer.get({ id: invoice.customer_id });
+      const customerData = customerResponse.data;
+      const customerErrors = customerResponse.errors;
+
+      if (customerErrors || !customerData) {
+        console.error(`Error fetching customer for invoice ${invoice.id}:`, customerErrors);
+        throw new Error(`Error fetching customer data for invoice ${invoice.id}`);
+      }
+
+      return {
+        ...invoice,
+        name: customerData.name,
+        image_url: customerData.image_url,
+        email: customerData.email,
+        amount: formatCurrency(invoice.amount),
+      };
     }));
-    return latestInvoices;
+
+    // Sort by date and return the latest 5 invoices
+    latestInvoices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return latestInvoices.slice(0, 5);
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch the latest invoices.');

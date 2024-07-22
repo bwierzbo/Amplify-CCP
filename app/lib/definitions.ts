@@ -29,6 +29,7 @@ export type Invoice = {
 export type Revenue = {
   month: string;
   revenue: number;
+  createdAt: string; 
 };
 
 export type LatestInvoice = {
