@@ -85,23 +85,28 @@ export async function fetchCardData() {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
     // how to initialize multiple queries in parallel with JS.
-    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
-    const invoiceStatusPromise = sql`SELECT
-         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
-         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
-         FROM invoices`;
+    const invoices = await client.models.Invoice.list();
+    const invoiceData = invoices.data;
 
-    const data = await Promise.all([
-      invoiceCountPromise,
-      customerCountPromise,
-      invoiceStatusPromise,
-    ]);
+    const customers = await client.models.Customer.list();
+    const customerData = customers.data;
 
-    const numberOfInvoices = Number(data[0].rows[0].count ?? '0');
-    const numberOfCustomers = Number(data[1].rows[0].count ?? '0');
-    const totalPaidInvoices = formatCurrency(data[2].rows[0].paid ?? '0');
-    const totalPendingInvoices = formatCurrency(data[2].rows[0].pending ?? '0');
+    // Calculate the required values
+    const numberOfInvoices = invoiceData.length;
+    const numberOfCustomers = customerData.length;
+
+
+    const totalPaidInvoices = formatCurrency(
+      invoiceData.reduce((sum, invoice) => {
+        return invoice.status === true ? sum + invoice.amount : sum;
+      }, 0)
+    );
+
+    const totalPendingInvoices = formatCurrency(
+      invoiceData.reduce((sum, invoice) => {
+        return invoice.status === false ? sum + invoice.amount : sum;
+      }, 0)
+    );
 
     return {
       numberOfCustomers,
@@ -116,35 +121,66 @@ export async function fetchCardData() {
 }
 
 const ITEMS_PER_PAGE = 6;
-export async function fetchFilteredInvoices(
-  query: string,
-  currentPage: number,
-) {
+export async function fetchFilteredInvoices(query: string, currentPage: number): Promise<InvoicesTable[]> {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
-    const invoices = await sql<InvoicesTable>`
-      SELECT
-        invoices.id,
-        invoices.amount,
-        invoices.date,
-        invoices.status,
-        customers.name,
-        customers.email,
-        customers.image_url
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      WHERE
-        customers.name ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`} OR
-        invoices.amount::text ILIKE ${`%${query}%`} OR
-        invoices.date::text ILIKE ${`%${query}%`} OR
-        invoices.status ILIKE ${`%${query}%`}
-      ORDER BY invoices.date DESC
-      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-    `;
+    // Fetch all invoices
+    const invoiceResponse = await client.models.Invoice.list();
+    const invoiceData = invoiceResponse.data;
+    const invoiceErrors = invoiceResponse.errors;
 
-    return invoices.rows;
+    if (invoiceErrors) {
+      console.error('Error fetching invoices:', invoiceErrors);
+      throw new Error('Error fetching invoice data.');
+    }
+
+    // Fetch all customers
+    const customerResponse = await client.models.Customer.list();
+    const customerData = customerResponse.data;
+    const customerErrors = customerResponse.errors;
+
+    if (customerErrors) {
+      console.error('Error fetching customers:', customerErrors);
+      throw new Error('Error fetching customer data.');
+    }
+
+    // Filter invoices based on the query
+    const filteredInvoices = invoiceData.filter(invoice => {
+      const customer = customerData.find(cust => cust.id === invoice.customer_id);
+      return (
+        (customer && (
+          customer.name.toLowerCase().includes(query.toLowerCase()) ||
+          customer.email.toLowerCase().includes(query.toLowerCase())
+        )) ||
+        invoice.amount.toString().includes(query) ||
+        invoice.date.toString().includes(query) ||
+        invoice.status.toString().toLowerCase().includes(query.toLowerCase())
+      );
+    });
+
+    // Sort invoices by date in descending order
+    filteredInvoices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    // Implement pagination
+    const paginatedInvoices = filteredInvoices.slice(offset, offset + ITEMS_PER_PAGE);
+
+    // Map the invoices to include customer data
+    const invoicesWithCustomerData = paginatedInvoices.map(invoice => {
+      const customer = customerData.find(cust => cust.id === invoice.customer_id);
+      return {
+        id: invoice.id as string,
+        amount: invoice.amount,
+        date: invoice.date,
+        status: invoice.status ? 'paid' : 'pending',
+        customer_id: invoice.customer_id, // Include the customer_id
+        name: customer ? customer.name : '',
+        email: customer ? customer.email : '',
+        image_url: customer ? customer.image_url : '',
+      };
+    });
+
+    return invoicesWithCustomerData as InvoicesTable[];
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoices.');
@@ -153,18 +189,41 @@ export async function fetchFilteredInvoices(
 
 export async function fetchInvoicesPages(query: string) {
   try {
-    const count = await sql`SELECT COUNT(*)
-    FROM invoices
-    JOIN customers ON invoices.customer_id = customers.id
-    WHERE
-      customers.name ILIKE ${`%${query}%`} OR
-      customers.email ILIKE ${`%${query}%`} OR
-      invoices.amount::text ILIKE ${`%${query}%`} OR
-      invoices.date::text ILIKE ${`%${query}%`} OR
-      invoices.status ILIKE ${`%${query}%`}
-  `;
+    // Fetch all invoices
+    const invoiceResponse = await client.models.Invoice.list();
+    const invoiceData = invoiceResponse.data;
+    const invoiceErrors = invoiceResponse.errors;
 
-    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+    if (invoiceErrors) {
+      console.error('Error fetching invoices:', invoiceErrors);
+      throw new Error('Error fetching invoice data.');
+    }
+
+    // Fetch all customers
+    const customerResponse = await client.models.Customer.list();
+    const customerData = customerResponse.data;
+    const customerErrors = customerResponse.errors;
+
+    if (customerErrors) {
+      console.error('Error fetching customers:', customerErrors);
+      throw new Error('Error fetching customer data.');
+    }
+
+    // Filter invoices based on the query
+    const filteredInvoices = invoiceData.filter(invoice => {
+      const customer = customerData.find(cust => cust.id === invoice.customer_id);
+      return (
+        (customer && (
+          customer.name.toLowerCase().includes(query.toLowerCase()) ||
+          customer.email.toLowerCase().includes(query.toLowerCase())
+        )) ||
+        invoice.amount.toString().includes(query) ||
+        invoice.date.toString().includes(query) ||
+        invoice.status.toString().toLowerCase().includes(query.toLowerCase())
+      );
+    });
+
+    const totalPages = Math.ceil(filteredInvoices.length / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
@@ -172,42 +231,53 @@ export async function fetchInvoicesPages(query: string) {
   }
 }
 
-export async function fetchInvoiceById(id: string) {
+export async function fetchInvoiceById(id: string): Promise<InvoiceForm> {
   try {
-    const data = await sql<InvoiceForm>`
-      SELECT
-        invoices.id,
-        invoices.customer_id,
-        invoices.amount,
-        invoices.status
-      FROM invoices
-      WHERE invoices.id = ${id};
-    `;
+    // Fetch the invoice by ID
+    const invoiceResponse = await client.models.Invoice.get({ id });
+    const invoiceData = invoiceResponse.data;
+    const invoiceErrors = invoiceResponse.errors;
 
-    const invoice = data.rows.map((invoice) => ({
-      ...invoice,
-      // Convert amount from cents to dollars
-      amount: invoice.amount / 100,
-    }));
+    if (invoiceErrors || !invoiceData || !invoiceData.id) {
+      console.error('Error fetching invoice:', invoiceErrors);
+      throw new Error('Error fetching invoice data or invoice ID is null.');
+    }
 
-    return invoice[0];
+    // Convert amount from cents to dollars
+    const invoice: InvoiceForm = {
+      id: invoiceData.id,
+      customer_id: invoiceData.customer_id,
+      amount: invoiceData.amount / 100,
+      status: invoiceData.status ? 'paid' : 'pending',
+    };
+
+    return invoice;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoice.');
   }
 }
 
-export async function fetchCustomers() {
+export async function fetchCustomers(): Promise<CustomerField[]> {
   try {
-    const data = await sql<CustomerField>`
-      SELECT
-        id,
-        name
-      FROM customers
-      ORDER BY name ASC
-    `;
+    // Fetch all customers
+    const customerResponse = await client.models.Customer.list();
+    const customerData = customerResponse.data;
+    const customerErrors = customerResponse.errors;
 
-    const customers = data.rows;
+    if (customerErrors) {
+      console.error('Error fetching customers:', customerErrors);
+      throw new Error('Error fetching customer data.');
+    }
+
+    // Map and sort the customers by name
+    const customers: CustomerField[] = customerData
+      .map(customer => ({
+        id: customer.id as string,
+        name: customer.name,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
     return customers;
   } catch (err) {
     console.error('Database Error:', err);
@@ -215,31 +285,62 @@ export async function fetchCustomers() {
   }
 }
 
-export async function fetchFilteredCustomers(query: string) {
-  try {
-    const data = await sql<CustomersTableType>`
-		SELECT
-		  customers.id,
-		  customers.name,
-		  customers.email,
-		  customers.image_url,
-		  COUNT(invoices.id) AS total_invoices,
-		  SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
-		  SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
-		FROM customers
-		LEFT JOIN invoices ON customers.id = invoices.customer_id
-		WHERE
-		  customers.name ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`}
-		GROUP BY customers.id, customers.name, customers.email, customers.image_url
-		ORDER BY customers.name ASC
-	  `;
 
-    const customers = data.rows.map((customer) => ({
-      ...customer,
-      total_pending: formatCurrency(customer.total_pending),
-      total_paid: formatCurrency(customer.total_paid),
-    }));
+export async function fetchFilteredCustomers(query: string): Promise<CustomersTableType[]> {
+  try {
+    // Fetch all customers
+    const customerResponse = await client.models.Customer.list();
+    const customerData = customerResponse.data;
+    const customerErrors = customerResponse.errors;
+
+    if (customerErrors) {
+      console.error('Error fetching customers:', customerErrors);
+      throw new Error('Error fetching customer data.');
+    }
+
+    // Fetch all invoices
+    const invoiceResponse = await client.models.Invoice.list();
+    const invoiceData = invoiceResponse.data;
+    const invoiceErrors = invoiceResponse.errors;
+
+    if (invoiceErrors) {
+      console.error('Error fetching invoices:', invoiceErrors);
+      throw new Error('Error fetching invoice data.');
+    }
+
+    // Filter customers based on the query
+    const filteredCustomers = customerData.filter(customer => {
+      return (
+        customer.name.toLowerCase().includes(query.toLowerCase()) ||
+        customer.email.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+
+    // Calculate the total invoices, total pending, and total paid for each customer
+    const customers = filteredCustomers.map(customer => {
+      const customerInvoices = invoiceData.filter(invoice => invoice.customer_id === customer.id);
+
+      const totalInvoices = customerInvoices.length;
+      const totalPending = customerInvoices
+        .filter(invoice => invoice.status === false)
+        .reduce((sum, invoice) => sum + invoice.amount, 0);
+      const totalPaid = customerInvoices
+        .filter(invoice => invoice.status === true)
+        .reduce((sum, invoice) => sum + invoice.amount, 0);
+
+      return {
+        id: customer.id as string,
+        name: customer.name,
+        email: customer.email,
+        image_url: customer.image_url,
+        total_invoices: totalInvoices,
+        total_pending: totalPending,
+        total_paid: totalPaid,
+      };
+    });
+
+    // Sort the customers by name
+    customers.sort((a, b) => a.name.localeCompare(b.name));
 
     return customers;
   } catch (err) {
