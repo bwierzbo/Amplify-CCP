@@ -1,80 +1,76 @@
 'use server';
 
 import { z } from 'zod';
-import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { generateClient } from 'aws-amplify/data';
-import { type Schema } from '@/amplify/data/resource'
+import { type Schema } from '@/amplify/data/resource';
+
+import { Amplify } from 'aws-amplify';
+import outputs from '@/amplify_outputs.json';
+
+Amplify.configure(outputs);
+
 
 const client = generateClient<Schema>();
 
- 
 const FormSchema = z.object({
-    id: z.string(),
-    customerId: z.string({
-      invalid_type_error: 'Please select a customer.',
-    }),
-    amount: z.coerce
-      .number()
-      .gt(0, { message: 'Please enter an amount greater than $0.' }),
-    status: z.enum(['pending', 'paid'], {
-      invalid_type_error: 'Please select an invoice status.',
-    }),
-    date: z.string(),
-  });
- 
+  id: z.string(),
+  customerId: z.string({
+    invalid_type_error: 'Please select a customer.',
+  }),
+  amount: z.coerce
+    .number()
+    .gt(0, { message: 'Please enter an amount greater than $0.' }),
+  status: z.enum(['pending', 'paid'], {
+    invalid_type_error: 'Please select an invoice status.',
+  }),
+  date: z.string(),
+});
+
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
-const CreateSupplier = FormSchema.omit({ id: true, date: true });
-const UpdateSupplier = FormSchema.omit({ id: true, date: true });
+
+const CreateInvoiceSchema = z.object({
+  customerId: z.string().nonempty('Please select a customer.'),
+  amount: z.coerce.number().gt(0, { message: 'Please enter an amount greater than $0.' }),
+  status: z.enum(['pending', 'paid'], { errorMap: () => ({ message: 'Please select an invoice status.' }) }),
+});
 
 export type State = {
-    errors?: {
-      customerId?: string[];
-      amount?: string[];
-      status?: string[];
-    };
-    message?: string | null;
+  errors?: {
+    customerId?: string[];
+    amount?: string[];
+    status?: string[];
   };
-  
-  export type SState = {
-    errors?: {
-      SupplierName?: string[];
-      SupplierEmail?: string[];
-      SupplierPhone?: string[];
-      SupplierAddress?: string[];
-      Ostatus?: string[];
-      Pstatus?: string[];
+  message?: string | null;
+};
+
+// INVOICE ACTIONS
+
+export async function createInvoice(prevState: State, formData: FormData) {
+  let redirectPath: string | null = null
+  console.log('Creating invoice...');
+
+  const validatedFields = CreateInvoice.safeParse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  });
+
+  if (!validatedFields.success) {
+    console.log('Validation failed:', validatedFields.error.flatten().fieldErrors);
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Invoice.',
     };
-    message?: string | null;
-  };
+  }
 
+  const { customerId, amount, status } = validatedFields.data;
+  const amountInCents = amount * 100;
+  const date = new Date().toISOString().split('T')[0];
 
-  //INVOICE ACTIONS
-
-  export async function createInvoice(prevState: State, formData: FormData) {
-    // Validate form using Zod
-    const validatedFields = CreateInvoice.safeParse({
-      customerId: formData.get('customerId'),
-      amount: formData.get('amount'),
-      status: formData.get('status'),
-    });
-   
-    // If form validation fails, return errors early. Otherwise, continue.
-    if (!validatedFields.success) {
-      return {
-        errors: validatedFields.error.flatten().fieldErrors,
-        message: 'Missing Fields. Failed to Create Invoice.',
-      };
-    }
-   
-    // Prepare data for insertion into the database
-    const { customerId, amount, status } = validatedFields.data;
-    const amountInCents = amount * 100;
-    const date = new Date().toISOString().split('T')[0];
-    // Insert data into the database
   try {
     await client.models.Invoice.create({
       customer_id: customerId,
@@ -82,19 +78,23 @@ export type State = {
       status: status === 'paid', // Assuming status is a boolean in your schema
       date: date,
     });
+    console.log('Invoice created successfully');
+
+    // Revalidate the cache for the invoices page and redirect the user.
+    redirectPath = `/dashboard/invoices`;
   } catch (error) {
-    // If a database error occurs, return a more specific error.
+    console.error('Database Error:', error);
+    redirectPath = '/dashboard/invoices';
     return {
       message: 'Database Error: Failed to Create Invoice.',
     };
+  } finally {
+    if (redirectPath)
+      redirect(redirectPath);
+      revalidatePath('/dashboard/invoices');
+
   }
-
-  // Revalidate the cache for the invoices page and redirect the user.
-  revalidatePath('/dashboard/invoices');
-  redirect('/dashboard/invoices');
 }
-
-
 
 export async function updateInvoice(
   id: string,
@@ -157,91 +157,148 @@ export async function deleteInvoice(id: string) {
 }
 
 
-//Supplier ACTIONS
+// SUPPLIER ACTIONS
 
-export async function createSupplier(prevState: State, formData: FormData) {
+const SupplierFormSchema = z.object({
+  id: z.string(),
+  supplierName: z.string({
+    invalid_type_error: 'Please enter a supplier name.',
+  }),
+  supplierEmail: z.string().email({
+    message: 'Please enter a valid email address.',
+  }),
+  supplierPhone: z.string({
+    invalid_type_error: 'Please enter a valid phone number.',
+  }),
+  supplierAddress: z.string({
+    invalid_type_error: 'Please enter a valid address.',
+  }),
+  oStatus: z.enum(['active', 'inactive'], {
+    invalid_type_error: 'Please select a status.',
+  }),
+  pStatus: z.enum(['pending', 'processed'], {
+    invalid_type_error: 'Please select a payment status.',
+  }),
+  date: z.string(),
+});
+
+const CreateSupplier = SupplierFormSchema.omit({ id: true, date: true });
+const UpdateSupplier = SupplierFormSchema.omit({ id: true, date: true });
+
+export type SState = {
+  errors?: {
+    supplierName?: string[];
+    supplierEmail?: string[];
+    supplierPhone?: string[];
+    supplierAddress?: string[];
+    oStatus?: string[];
+    pStatus?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createSupplier(prevState: SState, formData: FormData) {
   // Validate form using Zod
-  const validatedFields = CreateInvoice.safeParse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
+  const validatedFields = CreateSupplier.safeParse({
+    supplierName: formData.get('supplierName'),
+    supplierEmail: formData.get('supplierEmail'),
+    supplierPhone: formData.get('supplierPhone'),
+    supplierAddress: formData.get('supplierAddress'),
+    oStatus: formData.get('oStatus'),
+    pStatus: formData.get('pStatus'),
   });
- 
+
   // If form validation fails, return errors early. Otherwise, continue.
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Create Invoice.',
+      message: 'Missing Fields. Failed to Create Supplier.',
     };
   }
- 
+
   // Prepare data for insertion into the database
-  const { customerId, amount, status } = validatedFields.data;
-  const amountInCents = amount * 100;
+  const { supplierName, supplierEmail, supplierPhone, supplierAddress, oStatus, pStatus } = validatedFields.data;
   const date = new Date().toISOString().split('T')[0];
- 
+
   // Insert data into the database
   try {
-    await sql`
-      INSERT INTO invoices (customer_id, amount, status, date)
-      VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-    `;
+    await client.models.Suppliers.create({
+      name: supplierName,
+      email: supplierEmail,
+      phone: supplierPhone,
+      address: supplierAddress,
+    });
   } catch (error) {
     // If a database error occurs, return a more specific error.
     return {
-      message: 'Database Error: Failed to Create Invoice.',
+      message: 'Database Error: Failed to Create Supplier.',
     };
   }
- 
-  // Revalidate the cache for the invoices page and redirect the user.
-  revalidatePath('/dashboard/invoices');
-  redirect('/dashboard/invoices');
-}
 
+  // Revalidate the cache for the suppliers page and redirect the user.
+  revalidatePath('/dashboard/suppliers');
+  redirect('/dashboard/suppliers');
+}
 
 
 export async function updateSupplier(
-id: string,
-prevState: State,
-formData: FormData,
+  id: string,
+  prevState: SState,
+  formData: FormData,
 ) {
-const validatedFields = UpdateInvoice.safeParse({
-  customerId: formData.get('customerId'),
-  amount: formData.get('amount'),
-  status: formData.get('status'),
-});
+  // Validate form using Zod
+  const validatedFields = UpdateSupplier.safeParse({
+    supplierName: formData.get('supplierName'),
+    supplierEmail: formData.get('supplierEmail'),
+    supplierPhone: formData.get('supplierPhone'),
+    supplierAddress: formData.get('supplierAddress'),
+    oStatus: formData.get('oStatus'),
+    pStatus: formData.get('pStatus'),
+  });
 
-if (!validatedFields.success) {
-  return {
-    errors: validatedFields.error.flatten().fieldErrors,
-    message: 'Missing Fields. Failed to Update Invoice.',
-  };
-}
+  // If form validation fails, return errors early. Otherwise, continue.
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Supplier.',
+    };
+  }
 
-const { customerId, amount, status } = validatedFields.data;
-const amountInCents = amount * 100;
+  const { supplierName, supplierEmail, supplierPhone, supplierAddress, oStatus, pStatus } = validatedFields.data;
 
-try {
-  await sql`
-    UPDATE invoices
-    SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-    WHERE id = ${id}
-  `;
-} catch (error) {
-  return { message: 'Database Error: Failed to Update Invoice.' };
-}
+  try {
+    // Fetch the existing supplier
+    const supplierResponse = await client.models.Suppliers.get({ id });
+    const supplierData = supplierResponse.data;
+    const supplierErrors = supplierResponse.errors;
 
-revalidatePath('/dashboard/invoices');
-redirect('/dashboard/invoices');
-}
-
-    export async function deleteSupplier(id: string) {
-      
-      try {
-        await sql`DELETE FROM invoices WHERE id = ${id}`;
-        revalidatePath('/dashboard/invoices');
-        return { message: 'Deleted Invoice.' };
-      } catch (error) {
-        return { message: 'Database Error: Failed to Delete Invoice.' };
-      }
+    if (supplierErrors || !supplierData) {
+      throw new Error('Error fetching supplier data.');
     }
+
+    // Update the supplier
+    await client.models.Suppliers.update({
+      id: id,
+      name: supplierName,
+      email: supplierEmail,
+      phone: supplierPhone,
+      address: supplierAddress,
+    });
+  } catch (error) {
+    return { message: 'Database Error: Failed to Update Supplier.' };
+  }
+
+  revalidatePath('/dashboard/suppliers');
+  redirect('/dashboard/suppliers');
+}
+
+export async function deleteSupplier(id: string) {
+  try {
+    // Delete the supplier
+    await client.models.Suppliers.delete({ id });
+    revalidatePath('/dashboard/suppliers');
+    return { message: 'Deleted Supplier.' };
+  } catch (error) {
+    return { message: 'Database Error: Failed to Delete Supplier.' };
+  }
+}

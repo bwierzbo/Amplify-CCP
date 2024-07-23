@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { inter } from '@/app/ui/fonts';
 import '@/app/ui/global.css';
+import { Amplify } from 'aws-amplify';
+import outputs from '../amplify_outputs.json';
 
+Amplify.configure(outputs);
 
 
 export const metadata: Metadata = {

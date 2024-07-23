@@ -4,6 +4,10 @@ import Link from 'next/link';
 import { lusitana } from '@/app/ui/fonts';
 import Image from 'next/image';
 import { Authenticator } from '@aws-amplify/ui-react'
+import { Amplify } from 'aws-amplify';
+import outputs from '../amplify_outputs.json';
+
+Amplify.configure(outputs);
 
 
 export default function Page() {
