@@ -34,7 +34,8 @@
     "fast-xml-parser": "^4.4.0",
     "next": "^14.3.0-canary.46",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "use-debounce": "^10.0.1"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.0.0",
