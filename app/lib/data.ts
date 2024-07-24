@@ -1,4 +1,3 @@
-import { sql } from '@vercel/postgres';
 import {
   CustomerField,
   CustomersTableType,
@@ -10,7 +9,7 @@ import { generateClient } from 'aws-amplify/data';
 import { type Schema } from '@/amplify/data/resource';
 import outputs from '@/amplify_outputs.json'
 import { Amplify } from 'aws-amplify';
-import { createData } from '@/app/lib/placeholder-data'
+//import { createData } from '@/app/lib/placeholder-data'
 
 
 Amplify.configure(outputs)
@@ -98,13 +97,13 @@ export async function fetchCardData() {
 
     const totalPaidInvoices = formatCurrency(
       invoiceData.reduce((sum, invoice) => {
-        return invoice.status === true ? sum + invoice.amount : sum;
+        return invoice.status === 'paid' ? sum + invoice.amount : sum;
       }, 0)
     );
 
     const totalPendingInvoices = formatCurrency(
       invoiceData.reduce((sum, invoice) => {
-        return invoice.status === false ? sum + invoice.amount : sum;
+        return invoice.status === 'pending' ? sum + invoice.amount : sum;
       }, 0)
     );
 
@@ -322,10 +321,10 @@ export async function fetchFilteredCustomers(query: string): Promise<CustomersTa
 
       const totalInvoices = customerInvoices.length;
       const totalPending = customerInvoices
-        .filter(invoice => invoice.status === false)
+        .filter(invoice => invoice.status === 'pending')
         .reduce((sum, invoice) => sum + invoice.amount, 0);
       const totalPaid = customerInvoices
-        .filter(invoice => invoice.status === true)
+        .filter(invoice => invoice.status === 'paid')
         .reduce((sum, invoice) => sum + invoice.amount, 0);
 
       return {

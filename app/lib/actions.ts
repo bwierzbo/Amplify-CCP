@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { generateClient } from 'aws-amplify/data';
 import { type Schema } from '@/amplify/data/resource';
-
 import { Amplify } from 'aws-amplify';
 import outputs from '@/amplify_outputs.json';
 
@@ -29,14 +28,8 @@ const FormSchema = z.object({
 });
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
-const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+const UpdateInvoice = FormSchema.omit({ date: true, id: true });
 
-
-const CreateInvoiceSchema = z.object({
-  customerId: z.string().nonempty('Please select a customer.'),
-  amount: z.coerce.number().gt(0, { message: 'Please enter an amount greater than $0.' }),
-  status: z.enum(['pending', 'paid'], { errorMap: () => ({ message: 'Please select an invoice status.' }) }),
-});
 
 export type State = {
   errors?: {
@@ -50,15 +43,14 @@ export type State = {
 // INVOICE ACTIONS
 
 export async function createInvoice(prevState: State, formData: FormData) {
-  let redirectPath: string | null = null
   console.log('Creating invoice...');
-
+  // Validate form fields using Zod
   const validatedFields = CreateInvoice.safeParse({
     customerId: formData.get('customerId'),
     amount: formData.get('amount'),
     status: formData.get('status'),
   });
-
+  // If form validation fails, return errors early. Otherwise, continue.
   if (!validatedFields.success) {
     console.log('Validation failed:', validatedFields.error.flatten().fieldErrors);
     return {
@@ -75,32 +67,30 @@ export async function createInvoice(prevState: State, formData: FormData) {
     await client.models.Invoice.create({
       customer_id: customerId,
       amount: amountInCents,
-      status: status === 'paid', // Assuming status is a boolean in your schema
+      status: status, // Assuming status is a boolean in your schema
       date: date,
     });
-    console.log('Invoice created successfully');
-
-    // Revalidate the cache for the invoices page and redirect the user.
-    redirectPath = `/dashboard/invoices`;
   } catch (error) {
     console.error('Database Error:', error);
-    redirectPath = '/dashboard/invoices';
     return {
       message: 'Database Error: Failed to Create Invoice.',
-    };
-  } finally {
-    if (redirectPath)
-      redirect(redirectPath);
-      revalidatePath('/dashboard/invoices');
+    }; 
+}
 
-  }
+  // Revalidate the cache for the invoices page and redirect the user.
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices');
 }
 
 export async function updateInvoice(
+  
   id: string,
   prevState: State,
   formData: FormData,
-) {
+)
+ {
+  let redirectPath: string | null = null
+
   // Validate form using Zod
   const validatedFields = UpdateInvoice.safeParse({
     customerId: formData.get('customerId'),
@@ -134,27 +124,42 @@ export async function updateInvoice(
       id: id,
       customer_id: customerId,
       amount: amountInCents,
-      status: status === 'paid', // Assuming status is a boolean in your schema
+      status: status, // Assuming status is a boolean in your schema
       date: invoiceData.date, // Keep the original date
     });
-  } catch (error) {
-    return { message: 'Database Error: Failed to Update Invoice.' };
+      // Revalidate the cache for the invoices page and redirect the user.
+      redirectPath = `/dashboard/invoices`;
+    }  catch (error) {
+      console.error('Database Error:', error);
+      return {
+        message: 'Database Error: Failed to Create Invoice.',
+      }; 
+  }
+  
+    // Revalidate the cache for the invoices page and redirect the user.
+    revalidatePath('/dashboard/invoices');
+    redirect('/dashboard/invoices');
   }
 
-  revalidatePath('/dashboard/invoices');
-  redirect('/dashboard/invoices');
-}
-
 export async function deleteInvoice(id: string) {
+  let redirectPath: string | null = null
+
   try {
     // Delete the invoice
     await client.models.Invoice.delete({ id });
-    revalidatePath('/dashboard/invoices');
-    return { message: 'Deleted Invoice.' };
-  } catch (error) {
-    return { message: 'Database Error: Failed to Delete Invoice.' };
+      // Revalidate the cache for the invoices page and redirect the user.
+      redirectPath = `/dashboard/invoices`;
+    } catch (error) {
+      console.error('Database Error:', error);
+      return {
+        message: 'Database Error: Failed to Create Invoice.',
+      }; 
   }
-}
+  
+    // Revalidate the cache for the invoices page and redirect the user.
+    revalidatePath('/dashboard/invoices');
+    redirect('/dashboard/invoices');
+  }
 
 
 // SUPPLIER ACTIONS

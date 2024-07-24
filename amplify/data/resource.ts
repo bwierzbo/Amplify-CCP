@@ -27,7 +27,7 @@ const schema = a.schema({
       customer_id: a.id().required(),
       amount: a.integer().required(),
       date: a.date().required(),
-      status: a.boolean().required(),
+      status: a.string().required(),
     }).authorization((allow) => [allow.publicApiKey()]),
 
     Revenue: a.model({
