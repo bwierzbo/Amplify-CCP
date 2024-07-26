@@ -1,3 +1,3 @@
 export default function Page() {
-    return <p>Cider Page</p>;
+    return <p>Management Dashboard Page</p>;
   }
