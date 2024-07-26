@@ -321,12 +321,12 @@ export async function fetchFilteredCustomers(query: string): Promise<FormattedCu
       const customerInvoices = invoiceData.filter(invoice => invoice.customer_id === customer.id);
 
       const totalInvoices = customerInvoices.length;
-      const totalPending = customerInvoices
+      const totalPending = formatCurrency(customerInvoices
         .filter(invoice => invoice.status === 'pending')
-        .reduce((sum, invoice) => sum + invoice.amount, 0);
-      const totalPaid = customerInvoices
+        .reduce((sum, invoice) => sum + invoice.amount, 0));
+      const totalPaid = formatCurrency(customerInvoices
         .filter(invoice => invoice.status === 'paid')
-        .reduce((sum, invoice) => sum + invoice.amount, 0);
+        .reduce((sum, invoice) => sum + invoice.amount, 0));
 
       return {
         id: customer.id as string,
@@ -334,8 +334,8 @@ export async function fetchFilteredCustomers(query: string): Promise<FormattedCu
         email: customer.email,
         image_url: customer.image_url,
         total_invoices: totalInvoices,
-        total_pending: totalPending.toFixed(2), // Convert number to string
-        total_paid: totalPaid.toFixed(2), // Convert number to string
+        total_pending: totalPending,
+        total_paid: totalPaid, 
       };
     });
 
