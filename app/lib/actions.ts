@@ -67,7 +67,7 @@ export async function createInvoice(prevState: State, formData: FormData) {
     await client.models.Invoice.create({
       customer_id: customerId,
       amount: amountInCents,
-      status: status, // Assuming status is a boolean in your schema
+      status: status, 
       date: date,
     });
   } catch (error) {
