@@ -3,6 +3,7 @@ import {
   CustomersTableType,
   InvoiceForm,
   InvoicesTable,
+  FormattedCustomersTable,
 } from './definitions';
 import { formatCurrency } from './utils';
 import { generateClient } from 'aws-amplify/data';
@@ -285,7 +286,7 @@ export async function fetchCustomers(): Promise<CustomerField[]> {
 }
 
 
-export async function fetchFilteredCustomers(query: string): Promise<CustomersTableType[]> {
+export async function fetchFilteredCustomers(query: string): Promise<FormattedCustomersTable[]> {
   try {
     // Fetch all customers
     const customerResponse = await client.models.Customer.list();
@@ -333,8 +334,8 @@ export async function fetchFilteredCustomers(query: string): Promise<CustomersTa
         email: customer.email,
         image_url: customer.image_url,
         total_invoices: totalInvoices,
-        total_pending: totalPending,
-        total_paid: totalPaid,
+        total_pending: totalPending.toFixed(2), // Convert number to string
+        total_paid: totalPaid.toFixed(2), // Convert number to string
       };
     });
 
