@@ -36,12 +36,35 @@ const schema = a.schema({
     }).authorization((allow) => [allow.publicApiKey()]),
 
     Suppliers: a.model({
+      id: a.id().required(),
+      name: a.string().required(),
+      email: a.email().required(),
+      phone: a.phone().required(),
+      address: a.string().required(),
+    }).authorization((allow) => [allow.publicApiKey()]),
+
+    
+    SupplierAppleVariety: a.model({
+      id: a.id().required(),
+      supplier_id: a.id().required(), // Foreign key linking to the Supplier table
+      apple_variety_id: a.id().required(), // Foreign key linking to the AppleVarieties table
+      quantity: a.integer().required(), // Quantity supplied
+    }).authorization((allow) => [allow.publicApiKey()]),
+
+    
+    AppleVarieties: a.model({
       id: a.id(),
-      name: a.string(),
-      email: a.email(),
-      phone: a.phone(),
-      address: a.string(),
-      apples: a.string(),
+      name: a.string().required(), //Name of the apple variety.
+      description: a.string().required(), //Description of the apple variety.
+      harvest_season: a.string().required(), //The typical season or time period when this variety is harvested.
+    }).authorization((allow) => [allow.publicApiKey()]),
+
+    HarvestRecords: a.model({
+      id: a.id(),
+      apple_variety_id: a.id().required(), //Foreign key linking to the AppleVarieties table.
+      quantity: a.integer().required(), //Quantity of apples harvested (in lbs buschels or bins).
+      quality: a.string().required(), //Quality rating of the harvested apples (e.g., Grade A, B, C). Up to client
+      harvest_date: a.date().required(), //Date when the apples were harvested.
     }).authorization((allow) => [allow.publicApiKey()]),
     
 });

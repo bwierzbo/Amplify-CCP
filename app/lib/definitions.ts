@@ -87,3 +87,26 @@ export type InvoiceForm = {
   amount: number;
   status: 'pending' | 'paid';
 };
+
+// New Types for Suppliers and Apple Varieties
+export type Supplier = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+};
+
+export type SupplierAppleVariety = {
+  id: string;
+  supplier_id: string;
+  apple_variety_id: string;
+  quantity: number;
+};
+
+export type AppleVarieties = {
+  id: string;
+  name: string;
+  description: string;
+  harvest_season: string;
+};

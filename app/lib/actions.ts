@@ -308,3 +308,223 @@ export async function deleteSupplier(id: string) {
     return { message: 'Database Error: Failed to Delete Supplier.' };
   }
 }
+
+// const FormSchema = z.object({
+//   id: z.string(),
+//   customerId: z.string({
+//     invalid_type_error: 'Please select a customer.',
+//   }),
+//   amount: z.coerce
+//     .number()
+//     .gt(0, { message: 'Please enter an amount greater than $0.' }),
+//   status: z.enum(['pending', 'paid'], {
+//     invalid_type_error: 'Please select an invoice status.',
+//   }),
+//   date: z.string(),
+// });
+
+
+
+
+//apple actions
+
+const AppleVarietySchema = z.object({
+  id: z.string(),
+  name: z.string({
+    invalid_type_error: 'Please enter a name.'
+  }),
+  description: z.string({
+    invalid_type_error: 'Please enter a description.'
+  }),
+  harvest_season: z.string({
+    invalid_type_error: 'Please enter a harvest season.'
+  }),
+});
+
+const CreateAppleVariety = AppleVarietySchema.omit({ id: true });
+const UpdateAppleVariety = AppleVarietySchema.omit({ id: true });
+
+export type AppleVarietyState = {
+  errors?: {
+    name?: string[];
+    description?: string[];
+    harvest_season?: string[];
+  };
+  message?: string | null;
+};
+
+// Apple Actions
+
+export async function createAppleVariety(prevState: AppleVarietyState, formData: FormData) {
+  const validatedFields = CreateAppleVariety.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description'),
+    harvest_season: formData.get('harvest_season'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Apple Variety.',
+    };
+  }
+
+  const { name, description, harvest_season } = validatedFields.data;
+
+  try {
+    await client.models.AppleVarieties.create({
+      name: name,
+      description: description,
+      harvest_season: harvest_season,
+    });
+  } catch (error) {
+    return {
+      message: 'Database Error: Failed to Create Apple Variety.',
+    };
+  }
+
+  revalidatePath('/dashboard/apple-varieties');
+  redirect('/dashboard/apple-varieties');
+}
+
+export async function updateAppleVariety(id: string, prevState: AppleVarietyState, formData: FormData) {
+  const validatedFields = UpdateAppleVariety.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description'),
+    harvest_season: formData.get('harvest_season'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Apple Variety.',
+    };
+  }
+
+  const { name, description, harvest_season } = validatedFields.data;
+
+  try {
+    await client.models.AppleVarieties.update({
+      id: id,
+      name: name,
+      description: description,
+      harvest_season: harvest_season,
+    });
+  } catch (error) {
+    return { message: 'Database Error: Failed to Update Apple Variety.' };
+  }
+
+  revalidatePath('/dashboard/apple-varieties');
+  redirect('/dashboard/apple-varieties');
+}
+
+export async function deleteAppleVariety(id: string) {
+  try {
+    await client.models.AppleVarieties.delete({ id });
+    revalidatePath('/dashboard/apple-varieties');
+    return { message: 'Deleted Apple Variety.' };
+  } catch (error) {
+    return { message: 'Database Error: Failed to Delete Apple Variety.' };
+  }
+}
+
+// Harvest Records Schema
+const HarvestRecordSchema = z.object({
+  id: z.string(),
+  apple_variety_id: z.string({
+    invalid_type_error: 'Please select an apple variety.'
+  }),
+  quantity: z.number().int().positive({ message: 'Please enter a positive quantity.' }),
+  quality: z.string().nonempty({ message: 'Please enter a quality rating.' }),
+  harvest_date: z.string().nonempty({ message: 'Please enter a harvest date.' }),
+});
+
+const CreateHarvestRecord = HarvestRecordSchema.omit({ id: true });
+const UpdateHarvestRecord = HarvestRecordSchema.omit({ id: true });
+
+export type HarvestRecordState = {
+  errors?: {
+    apple_variety_id?: string[];
+    quantity?: string[];
+    quality?: string[];
+    harvest_date?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createHarvestRecord(prevState: HarvestRecordState, formData: FormData) {
+  const validatedFields = CreateHarvestRecord.safeParse({
+    apple_variety_id: formData.get('apple_variety_id'),
+    quantity: Number(formData.get('quantity')),
+    quality: formData.get('quality'),
+    harvest_date: formData.get('harvest_date'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Harvest Record.',
+    };
+  }
+
+  const { apple_variety_id, quantity, quality, harvest_date } = validatedFields.data;
+
+  try {
+    await client.models.HarvestRecords.create({
+      apple_variety_id: apple_variety_id,
+      quantity: quantity,
+      quality: quality,
+      harvest_date: harvest_date,
+    });
+  } catch (error) {
+    return {
+      message: 'Database Error: Failed to Create Harvest Record.',
+    };
+  }
+
+  revalidatePath('/dashboard/harvest-records');
+  redirect('/dashboard/harvest-records');
+}
+
+export async function updateHarvestRecord(id: string, prevState: HarvestRecordState, formData: FormData) {
+  const validatedFields = UpdateHarvestRecord.safeParse({
+    apple_variety_id: formData.get('apple_variety_id'),
+    quantity: Number(formData.get('quantity')),
+    quality: formData.get('quality'),
+    harvest_date: formData.get('harvest_date'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Harvest Record.',
+    };
+  }
+
+  const { apple_variety_id, quantity, quality, harvest_date } = validatedFields.data;
+
+  try {
+    await client.models.HarvestRecords.update({
+      id: id,
+      apple_variety_id: apple_variety_id,
+      quantity: quantity,
+      quality: quality,
+      harvest_date: harvest_date,
+    });
+  } catch (error) {
+    return { message: 'Database Error: Failed to Update Harvest Record.' };
+  }
+
+  revalidatePath('/dashboard/harvest-records');
+  redirect('/dashboard/harvest-records');
+}
+
+export async function deleteHarvestRecord(id: string) {
+  try {
+    await client.models.HarvestRecords.delete({ id });
+    revalidatePath('/dashboard/harvest-records');
+    return { message: 'Deleted Harvest Record.' };
+  } catch (error) {
+    return { message: 'Database Error: Failed to Delete Harvest Record.' };
+  }
+}

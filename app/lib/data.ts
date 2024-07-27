@@ -4,6 +4,8 @@ import {
   InvoiceForm,
   InvoicesTable,
   FormattedCustomersTable,
+  SupplierAppleVariety,
+  AppleVarieties
 } from './definitions';
 import { formatCurrency } from './utils';
 import { generateClient } from 'aws-amplify/data';
@@ -348,3 +350,137 @@ export async function fetchFilteredCustomers(query: string): Promise<FormattedCu
     throw new Error('Failed to fetch customer table.');
   }
 }
+
+//Apple functions 
+
+export async function fetchAppleVarieties(): Promise<AppleVarieties[]> {
+  try {
+    // Fetch all apple varieties
+    const appleVarietyResponse = await client.models.AppleVarieties.list();
+    const appleVarietyData = appleVarietyResponse.data;
+    const appleVarietyErrors = appleVarietyResponse.errors;
+
+    if (appleVarietyErrors) {
+      console.error('Error fetching apple varieties:', appleVarietyErrors);
+      throw new Error('Error fetching apple variety data.');
+    }
+
+    // Map and sort the apple varieties by name
+    const appleVarieties: AppleVarieties[] = appleVarietyData
+      .map(variety => ({
+        id: variety.id as string,
+        name: variety.name,
+        description: variety.description,
+        harvest_season: variety.harvest_season,
+        createdAt: variety.createdAt,
+        updatedAt: variety.updatedAt,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return appleVarieties;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch all apple varieties.');
+  }
+}
+
+
+export async function fetchFilteredAppleVarieties(query: string, currentPage: number): Promise<AppleVarieties[]> {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    // Fetch all apple varieties
+    const appleVarietyResponse = await client.models.AppleVarieties.list();
+    const appleVarietyData = appleVarietyResponse.data;
+    const appleVarietyErrors = appleVarietyResponse.errors;
+
+    if (appleVarietyErrors) {
+      console.error('Error fetching apple varieties:', appleVarietyErrors);
+      throw new Error('Error fetching apple variety data.');
+    }
+
+    // Fetch all harvest records
+    const harvestRecordResponse = await client.models.HarvestRecords.list();
+    const harvestRecordData = harvestRecordResponse.data;
+    const harvestRecordErrors = harvestRecordResponse.errors;
+
+    if (harvestRecordErrors) {
+      console.error('Error fetching harvest records:', harvestRecordErrors);
+      throw new Error('Error fetching harvest record data.');
+    }
+
+    // Filter apple varieties based on the query
+    const filteredAppleVarieties = appleVarietyData.filter(variety => {
+      return (
+        variety.name.toLowerCase().includes(query.toLowerCase()) ||
+        variety.description.toLowerCase().includes(query.toLowerCase()) ||
+        variety.harvest_season.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+
+    // Calculate the total quantity and quality for each apple variety
+    const appleVarieties = filteredAppleVarieties.map(variety => {
+      const varietyHarvestRecords = harvestRecordData.filter(record => record.apple_variety_id === variety.id);
+
+      const totalQuantity = varietyHarvestRecords.reduce((sum, record) => sum + record.quantity, 0);
+      const qualityRatings = varietyHarvestRecords.map(record => record.quality);
+
+      // Format total quantity as a string
+      const formattedTotalQuantity = totalQuantity.toString();
+
+      // Join quality ratings as a comma-separated string
+      const formattedQualityRatings = qualityRatings.join(', ');
+
+      return {
+        id: variety.id as string,
+        name: variety.name,
+        description: variety.description,
+        harvest_season: variety.harvest_season,
+        total_quantity: formattedTotalQuantity,
+        quality_ratings: formattedQualityRatings,
+      };
+    });
+
+    // Implement pagination
+    const paginatedAppleVarieties = appleVarieties.slice(offset, offset + ITEMS_PER_PAGE);
+
+    // Sort the apple varieties by name
+    paginatedAppleVarieties.sort((a, b) => a.name.localeCompare(b.name));
+
+    return paginatedAppleVarieties;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch apple varieties.');
+  }
+}
+
+export async function fetchAppleVarietiesPages(query: string): Promise<number> {
+  try {
+    // Fetch all apple varieties
+    const appleVarietyResponse = await client.models.AppleVarieties.list();
+    const appleVarietyData = appleVarietyResponse.data;
+    const appleVarietyErrors = appleVarietyResponse.errors;
+
+    if (appleVarietyErrors) {
+      console.error('Error fetching apple varieties:', appleVarietyErrors);
+      throw new Error('Error fetching apple variety data.');
+    }
+
+    // Filter apple varieties based on the query
+    const filteredAppleVarieties = appleVarietyData.filter(variety => {
+      return (
+        variety.name.toLowerCase().includes(query.toLowerCase()) ||
+        variety.description.toLowerCase().includes(query.toLowerCase()) ||
+        variety.harvest_season.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+
+    const totalPages = Math.ceil(filteredAppleVarieties.length / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of apple varieties.');
+  }
+}
+
+
