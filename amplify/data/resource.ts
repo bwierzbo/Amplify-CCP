@@ -66,6 +66,20 @@ const schema = a.schema({
       quality: a.string().required(), //Quality rating of the harvested apples (e.g., Grade A, B, C). Up to client
       harvest_date: a.date().required(), //Date when the apples were harvested.
     }).authorization((allow) => [allow.publicApiKey()]),
+
+    OrchardPlot: a.model({
+      id: a.id(),
+      name: a.string().required(),
+    }).authorization((allow) => [allow.publicApiKey()]),
+  
+    Tree: a.model({
+      id: a.id(),
+      plotId: a.id().required(),
+      name: a.string().required(),
+      yearPlanted: a.string().required(),
+      rootstock: a.string().required(),
+      scionwood: a.string().required(),
+    }).authorization((allow) => [allow.publicApiKey()]),
     
 });
 
