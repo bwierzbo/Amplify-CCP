@@ -43,7 +43,7 @@ export default async function Page({
       <OrchardPlotManager />
 
       <Suspense key={query + currentPage} fallback={<AppleVarietiesTableSkeleton />}>
-        <AppleVarietiesTable appleVarieties={appleVarieties} query={query} currentPage={currentPage} />
+        <AppleVarietiesTable query={query} currentPage={currentPage} />
       </Suspense>
       <div className="mt-5 flex w-full justify-center">
         <Pagination totalPages={totalPages} />
