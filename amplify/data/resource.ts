@@ -70,6 +70,7 @@ const schema = a.schema({
     OrchardPlot: a.model({
       id: a.id(),
       name: a.string().required(),
+      treeIDs: a.id().array().required(),
     }).authorization((allow) => [allow.publicApiKey()]),
   
     Tree: a.model({
@@ -80,6 +81,7 @@ const schema = a.schema({
       rootstock: a.string().required(),
       scionwood: a.string().required(),
     }).authorization((allow) => [allow.publicApiKey()]),
+
     
 });
 

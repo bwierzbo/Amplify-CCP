@@ -5,7 +5,9 @@ import {
   InvoicesTable,
   FormattedCustomersTable,
   SupplierAppleVariety,
-  AppleVarieties
+  AppleVarieties,
+  OrchardPlot,
+  Tree,
 } from './definitions';
 import { formatCurrency } from './utils';
 import { generateClient } from 'aws-amplify/data';
@@ -483,4 +485,54 @@ export async function fetchAppleVarietiesPages(query: string): Promise<number> {
   }
 }
 
+export async function fetchOrchardPlots(): Promise<OrchardPlot[]> {
+  try {
+    const response = await client.models.OrchardPlot.list();
+    if (response.errors) {
+      throw new Error('Error fetching orchard plots');
+    }
 
+    const orchardPlots: OrchardPlot[] = response.data.map(plot => ({
+      id: plot.id || '',
+      name: plot.name,
+      trees: [],
+    }));
+
+    const treeResponse = await client.models.Tree.list();
+    if (treeResponse.errors) {
+      throw new Error('Error fetching trees');
+    }
+
+    treeResponse.data.forEach(tree => {
+      const plot = orchardPlots.find(p => p.id === tree.plotId);
+      if (plot) {
+        plot.trees.push(tree as Tree);
+      }
+    });
+
+    return orchardPlots;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch orchard plots.');
+  }
+}
+
+export async function fetchTrees(): Promise<Tree[]> {
+  try {
+    const response = await client.models.Tree.list();
+    if (response.errors) {
+      throw new Error('Error fetching trees');
+    }
+    return response.data.map(tree => ({
+      id: tree.id as string,
+      plotId: tree.plotId,
+      name: tree.name,
+      yearPlanted: tree.yearPlanted,
+      rootstock: tree.rootstock,
+      scionwood: tree.scionwood,
+    })) as Tree[];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch trees.');
+  }
+}

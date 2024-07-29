@@ -536,12 +536,12 @@ export async function deleteHarvestRecord(id: string) {
 }
 
 
-// Orchard plot and tree crud operations
 
+// Orchard Plot Schema
 const OrchardPlotSchema = z.object({
   id: z.string(),
   name: z.string({
-    invalid_type_error: 'Please enter a name.'
+    invalid_type_error: 'Please enter a name.',
   }),
 });
 
@@ -549,91 +549,31 @@ const OrchardPlotSchema = z.object({
 const TreeSchema = z.object({
   id: z.string(),
   plotId: z.string({
-    invalid_type_error: 'Please select an orchard plot.'
+    invalid_type_error: 'Please select an orchard plot.',
   }),
   name: z.string({
-    invalid_type_error: 'Please enter a name.'
+    invalid_type_error: 'Please enter a name.',
   }),
   yearPlanted: z.string({
-    invalid_type_error: 'Please enter the year planted.'
+    invalid_type_error: 'Please enter the year planted.',
   }),
   rootstock: z.string({
-    invalid_type_error: 'Please enter the type of rootstock.'
+    invalid_type_error: 'Please enter the type of rootstock.',
   }),
   scionwood: z.string({
-    invalid_type_error: 'Please enter the type of scionwood.'
+    invalid_type_error: 'Please enter the type of scionwood.',
   }),
 });
-
-// ORCHARD PLOT ACTIONS
-
-export async function createOrchardPlot(prevState: State, formData: FormData) {
-  const validatedFields = CreateOrchardPlot.safeParse({
-    name: formData.get('name'),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Create Orchard Plot.',
-    };
-  }
-
-  const { name } = validatedFields.data;
-
-  try {
-    await client.models.OrchardPlot.create({ name });
-  } catch (error) {
-    console.error('Database Error:', error);
-    return { message: 'Database Error: Failed to Create Orchard Plot.' };
-  }
-
-  revalidatePath('/dashboard/production/orchard');
-  redirect('/dashboard/production/orchard');
-}
-
-export async function updateOrchardPlot(id: string, prevState: State, formData: FormData) {
-  const validatedFields = UpdateOrchardPlot.safeParse({
-    name: formData.get('name'),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Update Orchard Plot.',
-    };
-  }
-
-  const { name } = validatedFields.data;
-
-  try {
-    await client.models.OrchardPlot.update({ id, name });
-  } catch (error) {
-    console.error('Database Error:', error);
-    return { message: 'Database Error: Failed to Update Orchard Plot.' };
-  }
-
-  revalidatePath('/dashboard/production/orchard');
-  redirect('/dashboard/production/orchard');
-}
-
-export async function deleteOrchardPlot(id: string) {
-  try {
-    await client.models.OrchardPlot.delete({ id });
-  } catch (error) {
-    console.error('Database Error:', error);
-    return { message: 'Database Error: Failed to Delete Orchard Plot.' };
-  }
-
-  revalidatePath('/dashboard/production/orchard');
-  redirect('/dashboard/production/orchard');
-}
 
 const CreateOrchardPlot = OrchardPlotSchema.omit({ id: true });
 const UpdateOrchardPlot = OrchardPlotSchema.omit({ id: true });
 
 const CreateTree = TreeSchema.omit({ id: true });
 const UpdateTree = TreeSchema.omit({ id: true });
+
+// ORCHARD PLOT ACTIONS
+
+
 
 export type OrchardState = {
   errors?: {
@@ -646,75 +586,4 @@ export type OrchardState = {
   message?: string | null;
 };
 
-
-// TREE ACTIONS
-
-export async function createTree(prevState: OrchardState, formData: FormData) {
-  const validatedFields = CreateTree.safeParse({
-    plotId: formData.get('plotId'),
-    name: formData.get('name'),
-    yearPlanted: formData.get('yearPlanted'),
-    rootstock: formData.get('rootstock'),
-    scionwood: formData.get('scionwood'),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Create Tree.',
-    };
-  }
-
-  const { plotId, name, yearPlanted, rootstock, scionwood } = validatedFields.data;
-
-  try {
-    await client.models.Tree.create({ plotId, name, yearPlanted, rootstock, scionwood });
-  } catch (error) {
-    console.error('Database Error:', error);
-    return { message: 'Database Error: Failed to Create Tree.' };
-  }
-
-  revalidatePath('/dashboard/production/orchard');
-  redirect('/dashboard/production/orchard');
-}
-
-export async function updateTree(id: string, prevState: OrchardState, formData: FormData) {
-  const validatedFields = UpdateTree.safeParse({
-    plotId: formData.get('plotId'),
-    name: formData.get('name'),
-    yearPlanted: formData.get('yearPlanted'),
-    rootstock: formData.get('rootstock'),
-    scionwood: formData.get('scionwood'),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Update Tree.',
-    };
-  }
-
-  const { plotId, name, yearPlanted, rootstock, scionwood } = validatedFields.data;
-
-  try {
-    await client.models.Tree.update({ id, plotId, name, yearPlanted, rootstock, scionwood });
-  } catch (error) {
-    console.error('Database Error:', error);
-    return { message: 'Database Error: Failed to Update Tree.' };
-  }
-
-  revalidatePath('/dashboard/production/orchard');
-  redirect('/dashboard/production/orchard');
-}
-
-export async function deleteTree(id: string) {
-  try {
-    await client.models.Tree.delete({ id });
-  } catch (error) {
-    console.error('Database Error:', error);
-    return { message: 'Database Error: Failed to Delete Tree.' };
-  }
-
-  revalidatePath('/dashboard/production/orchard');
-  redirect('/dashboard/production/orchard');
-}
+// ORCHARD PLOT ACTIONS

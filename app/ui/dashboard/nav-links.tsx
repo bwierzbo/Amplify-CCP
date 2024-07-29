@@ -29,30 +29,33 @@ type NavLinkType = {
 const links: NavLinkType[] = [
   { name: 'Home', href: '/dashboard', icon: HomeIcon },
   {
-    name: 'Production',
-    href: '/dashboard/production',
+    name: 'Orchard Management',
+    href: '/dashboard/orchardmanagement',
     icon: CogIcon,
     children: [
-      { name: 'Orchard', href: '/dashboard/production/orchard', icon: SunIcon },
-      { name: 'Cider', href: '/dashboard/production/cider', icon: BeakerIcon },
+      { name: 'Apple Varieties', href: '/dashboard/orchardmanagement/applevarieties', icon: SunIcon },
+      { name: 'Tree Management', href: '/dashboard/orchardmanagement/treemanagement', icon: BeakerIcon },
+      { name: 'Apples', href: '/dashboard/orchardmanagement/harvestmanagement'},
+      { name: 'Apples', href: '/dashboard/orchardmanagement/maintenance'},
     ],
   },
   {
-    name: 'Management',
-    href: '/dashboard/management',
+    name: 'Production',
+    href: '/dashboard/production',
     icon: ClipboardDocumentIcon,
     children: [
-      { name: 'Suppliers', href: '/dashboard/management/suppliers', icon: TruckIcon },
-      { name: 'Inventory', href: '/dashboard/management/inventory', icon: DocumentDuplicateIcon },
+      { name: 'Inventory', href: '/dashboard/production/inventory', icon: TruckIcon },
+      { name: 'Recipes', href: '/dashboard/production/recipes', icon: TruckIcon },
+      { name: 'Liquid Tracking', href: '/dashboard/production/liquidtracking', icon: DocumentDuplicateIcon },
     ],
   },
   {
     name: 'Sales',
-    href: '/dashboard/finances',
+    href: '/dashboard/sales',
     icon: CurrencyDollarIcon,
     children: [
-      { name: 'Customers', href: '/dashboard/finances/customers', icon: UserGroupIcon },
-      { name: 'Invoices', href: '/dashboard/finances/invoices', icon: DocumentTextIcon },
+      { name: 'Customers', href: '/dashboard/sales/customers', icon: UserGroupIcon },
+      { name: 'Invoices', href: '/dashboard/sales/invoices', icon: DocumentTextIcon },
     ],
   },
 ];

@@ -110,3 +110,20 @@ export type AppleVarieties = {
   description: string;
   harvest_season: string;
 };
+
+//orchard plot gui
+
+export type OrchardPlot = {
+  id: string;
+  name: string;
+  trees: Tree[];
+};
+
+export type Tree = {
+  id: string;
+  plotId: string;
+  name: string;
+  yearPlanted: string;
+  rootstock: string;
+  scionwood: string;
+};

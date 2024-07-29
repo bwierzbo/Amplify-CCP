@@ -1,3 +1,3 @@
 export default function Page() {
-    return <p>Inventory Page</p>;
+    return <p>Maintenance Page</p>;
   }
