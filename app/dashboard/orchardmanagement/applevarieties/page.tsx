@@ -1,7 +1,6 @@
 // app/dashboard/production/orchard/page.tsx
 import Pagination from '@/app/ui/invoices/pagination';
 import Search from '@/app/ui/search';
-import AppleVarietiesTable from '@/app/ui/orchardmanagement/table';
 import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';
 import { AppleVarietiesTableSkeleton } from '@/app/ui/skeletons'; // Adjust path as necessary
@@ -39,7 +38,7 @@ export default async function Page({
       </div>
 
       <Suspense key={query + currentPage} fallback={<AppleVarietiesTableSkeleton />}>
-        <AppleVarietiesTable query={query} currentPage={currentPage} />
+        {/* <AppleVarietiesTable query={query} currentPage={currentPage} /> */}
       </Suspense>
       <div className="mt-5 flex w-full justify-center">
         <Pagination totalPages={totalPages} />
