@@ -79,8 +79,8 @@ export async function createInvoice(prevState: State, formData: FormData) {
 
   // Revalidate the cache for the invoices page and redirect the user.
   console.log("created invoice")
-  revalidatePath('/dashboard/invoices');
-  redirect('/dashboard/invoices');
+  revalidatePath('/dashboard/sales/invoices');
+  redirect('/dashboard/sales/invoices');
 }
 
 export async function updateInvoice(
@@ -129,7 +129,7 @@ export async function updateInvoice(
       date: invoiceData.date, // Keep the original date
     });
       // Revalidate the cache for the invoices page and redirect the user.
-      redirectPath = `/dashboard/invoices`;
+      redirectPath = `/dashboard/sales/invoices`;
     }  catch (error) {
       console.error('Database Error:', error);
       return {
@@ -138,8 +138,8 @@ export async function updateInvoice(
   }
   
     // Revalidate the cache for the invoices page and redirect the user.
-    revalidatePath('/dashboard/invoices');
-    redirect('/dashboard/invoices');
+    revalidatePath('/dashboard/sales/invoices');
+    redirect('/dashboard/sales/invoices');
   }
 
 export async function deleteInvoice(id: string) {
@@ -149,7 +149,7 @@ export async function deleteInvoice(id: string) {
     // Delete the invoice
     await client.models.Invoice.delete({ id });
       // Revalidate the cache for the invoices page and redirect the user.
-      redirectPath = `/dashboard/invoices`;
+      redirectPath = `/dashboard/sales/invoices`;
     } catch (error) {
       console.error('Database Error:', error);
       return {
@@ -158,8 +158,8 @@ export async function deleteInvoice(id: string) {
   }
   
     // Revalidate the cache for the invoices page and redirect the user.
-    revalidatePath('/dashboard/invoices');
-    redirect('/dashboard/invoices');
+    revalidatePath('/dashboard/sales/invoices');
+    redirect('/dashboard/sales/invoices');
   }
 
 

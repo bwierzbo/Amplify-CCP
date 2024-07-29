@@ -1,7 +1,7 @@
 // app/dashboard/production/orchard/page.tsx
 import Pagination from '@/app/ui/invoices/pagination';
 import Search from '@/app/ui/search';
-import AppleVarietiesTable from '@/app/ui/orchard/table';
+import AppleVarietiesTable from '@/app/ui/orchardmanagement/table';
 import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';
 import { AppleVarietiesTableSkeleton } from '@/app/ui/skeletons'; // Adjust path as necessary
