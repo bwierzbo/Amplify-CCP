@@ -213,7 +213,6 @@ export async function createSupplier(prevState: SupplierState, formData: FormDat
 
   // Prepare data for insertion into the database
   const { supplierName, supplierEmail, supplierPhone, supplierAddress} = validatedFields.data;
-  const date = new Date().toISOString().split('T')[0];
 
   // Insert data into the database
   try {
@@ -223,6 +222,7 @@ export async function createSupplier(prevState: SupplierState, formData: FormDat
       phone: supplierPhone,
       address: supplierAddress,
     });
+    
   } catch (error) {
     // If a database error occurs, return a more specific error.
     return {
