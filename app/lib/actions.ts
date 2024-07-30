@@ -231,8 +231,8 @@ export async function createSupplier(prevState: SupplierState, formData: FormDat
   }
 
   // Revalidate the cache for the suppliers page and redirect the user.
-  revalidatePath('/dashboard/suppliers');
-  redirect('/dashboard/suppliers');
+  revalidatePath('/dashboard/production/suppliers');
+  redirect('/dashboard/production/suppliers');
 }
 
 
@@ -281,15 +281,15 @@ export async function updateSupplier(
     return { message: 'Database Error: Failed to Update Supplier.' };
   }
 
-  revalidatePath('/dashboard/suppliers');
-  redirect('/dashboard/suppliers');
+  revalidatePath('/dashboard/production/suppliers');
+  redirect('/dashboard/production/suppliers');
 }
 
 export async function deleteSupplier(id: string) {
   try {
     // Delete the supplier
     await client.models.Suppliers.delete({ id });
-    revalidatePath('/dashboard/suppliers');
+    revalidatePath('/dashboard/production/suppliers');
     return { message: 'Deleted Supplier.' };
   } catch (error) {
     return { message: 'Database Error: Failed to Delete Supplier.' };
