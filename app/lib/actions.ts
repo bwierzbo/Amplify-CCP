@@ -201,8 +201,6 @@ export async function createSupplier(prevState: SupplierState, formData: FormDat
     supplierEmail: formData.get('supplierEmail'),
     supplierPhone: formData.get('supplierPhone'),
     supplierAddress: formData.get('supplierAddress'),
-    oStatus: formData.get('oStatus'),
-    pStatus: formData.get('pStatus'),
   });
 
   // If form validation fails, return errors early. Otherwise, continue.
