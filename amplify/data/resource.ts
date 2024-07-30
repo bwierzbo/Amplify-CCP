@@ -36,11 +36,11 @@ const schema = a.schema({
     }).authorization((allow) => [allow.publicApiKey()]),
 
     Suppliers: a.model({
-      id: a.id().required(),
+      id: a.id(),
       name: a.string().required(),
-      email: a.email().required(),
-      phone: a.phone().required(),
-      address: a.string().required(),
+      email: a.email(),
+      phone: a.phone(),
+      address: a.string(),
     }).authorization((allow) => [allow.publicApiKey()]),
 
     
