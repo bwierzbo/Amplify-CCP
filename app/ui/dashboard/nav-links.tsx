@@ -35,8 +35,8 @@ const links: NavLinkType[] = [
     children: [
       { name: 'Apple Varieties', href: '/dashboard/orchardmanagement/applevarieties', icon: SunIcon },
       { name: 'Tree Management', href: '/dashboard/orchardmanagement/treemanagement', icon: BeakerIcon },
-      { name: 'Apples', href: '/dashboard/orchardmanagement/harvestmanagement'},
-      { name: 'Apples', href: '/dashboard/orchardmanagement/maintenance'},
+      { name: 'Havest Management', href: '/dashboard/orchardmanagement/harvestmanagement'},
+      { name: 'Maintenance', href: '/dashboard/orchardmanagement/maintenance'},
     ],
   },
   {
@@ -45,6 +45,7 @@ const links: NavLinkType[] = [
     icon: ClipboardDocumentIcon,
     children: [
       { name: 'Inventory', href: '/dashboard/production/inventory', icon: TruckIcon },
+      { name: 'Suppliers', href: '/dashboard/production/suppliers', icon: TruckIcon },
       { name: 'Recipes', href: '/dashboard/production/recipes', icon: TruckIcon },
       { name: 'Liquid Tracking', href: '/dashboard/production/liquidtracking', icon: DocumentDuplicateIcon },
     ],

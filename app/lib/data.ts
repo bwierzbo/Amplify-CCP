@@ -8,12 +8,14 @@ import {
   AppleVarieties,
   OrchardPlot,
   Tree,
+  Supplier
 } from './definitions';
 import { formatCurrency } from './utils';
 import { generateClient } from 'aws-amplify/data';
 import { type Schema } from '@/amplify/data/resource';
 import outputs from '@/amplify_outputs.json'
 import { Amplify } from 'aws-amplify';
+import { create } from 'domain';
 //import { createData } from '@/app/lib/placeholder-data'
 
 
@@ -21,8 +23,6 @@ Amplify.configure(outputs)
  
 
 const client = generateClient<Schema>();
-
-
 
 
 export async function fetchRevenue() {
@@ -350,6 +350,155 @@ export async function fetchFilteredCustomers(query: string): Promise<FormattedCu
   } catch (err) {
     console.error('Database Error:', err);
     throw new Error('Failed to fetch customer table.');
+  }
+}
+
+
+//Supplier functions
+
+export async function fetchSuppliers(): Promise<Supplier[]> {
+  try {
+    // Fetch all suppliers
+    const supplierResponse = await client.models.Suppliers.list();
+    const supplierData = supplierResponse.data;
+    const supplierErrors = supplierResponse.errors;
+
+    if (supplierErrors) {
+      console.error('Error fetching suppliers:', supplierErrors);
+      throw new Error('Error fetching supplier data.');
+    }
+
+    // Map and sort the suppliers by name
+    const suppliers: Supplier[] = supplierData
+      .map(supplier => ({
+        id: supplier.id as string,
+        name: supplier.name,
+        email: supplier.email,
+        phone: supplier.phone,
+        address: supplier.address,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return suppliers;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch all suppliers.');
+  }
+}
+
+
+export async function fetchSuppliersPages(query: string) {
+  try {
+    const supplier1 = await client.models.Suppliers.create({
+      name: 'Supplier three',
+        email: 'supplier1@example.com',
+        phone: '123-456-7890',
+        address: '123 Main St, Hometown, USA',
+    });
+
+
+    // Fetch all suppliers
+    const supplierResponse = await client.models.Suppliers.list();
+    const supplierData = supplierResponse.data;
+    const supplierErrors = supplierResponse.errors;
+
+    if (supplierErrors) {
+      console.error('Error fetching suppliers:', supplierErrors);
+      throw new Error('Error fetching supplier data.');
+    }
+
+    // Fetch all apple varieties (if needed for filtering)
+    const appleVarietyResponse = await client.models.AppleVarieties.list();
+    const appleVarietyData = appleVarietyResponse.data;
+    const appleVarietyErrors = appleVarietyResponse.errors;
+
+    if (appleVarietyErrors) {
+      console.error('Error fetching apple varieties:', appleVarietyErrors);
+      throw new Error('Error fetching apple variety data.');
+    }
+
+    // Filter suppliers based on the query
+    const filteredSuppliers = supplierData.filter(supplier => {
+      return (
+        supplier.name.toLowerCase().includes(query.toLowerCase()) ||
+        supplier.email.toLowerCase().includes(query.toLowerCase()) ||
+        supplier.phone.toString().includes(query) ||
+        supplier.address.toLowerCase().includes(query.toLowerCase())
+        );
+    });
+
+    const totalPages = Math.ceil(filteredSuppliers.length / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of suppliers.');
+  }
+}
+
+export async function fetchSupplierById(id: string): Promise<Supplier> {
+  try {
+    // Fetch the supplier by ID
+    const supplierResponse = await client.models.Suppliers.get({ id });
+    const supplierData = supplierResponse.data;
+    const supplierErrors = supplierResponse.errors;
+
+    if (supplierErrors || !supplierData || !supplierData.id) {
+      console.error('Error fetching supplier:', supplierErrors);
+      throw new Error('Error fetching supplier data or supplier ID is null.');
+    }
+
+    // Map the supplier data
+    const supplier: Supplier = {
+      id: supplierData.id,
+      name: supplierData.name,
+      email: supplierData.email,
+      phone: supplierData.phone,
+      address: supplierData.address,
+    };
+
+    return supplier;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch supplier.');
+  }
+}
+
+
+
+export async function fetchFilteredSuppliers(query: string, currentPage: number): Promise<Supplier[]> {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    // Fetch all suppliers
+    const supplierResponse = await client.models.Suppliers.list();
+    const supplierData = supplierResponse.data;
+    const supplierErrors = supplierResponse.errors;
+
+    if (supplierErrors) {
+      console.error('Error fetching suppliers:', supplierErrors);
+      throw new Error('Error fetching supplier data.');
+    }
+
+    // Filter suppliers based on the query
+    const filteredSuppliers = supplierData.filter(supplier => {
+      return (
+        supplier.name.toLowerCase().includes(query.toLowerCase()) ||
+        supplier.email.toLowerCase().includes(query.toLowerCase()) ||
+        supplier.phone.toString().includes(query) ||
+        supplier.address.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+
+    // Sort suppliers by name in ascending order
+    filteredSuppliers.sort((a, b) => a.name.localeCompare(b.name));
+
+    // Implement pagination
+    const paginatedSuppliers = filteredSuppliers.slice(offset, offset + ITEMS_PER_PAGE);
+
+    return paginatedSuppliers as Supplier[];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch suppliers.');
   }
 }
 

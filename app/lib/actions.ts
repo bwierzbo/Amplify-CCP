@@ -179,31 +179,22 @@ const SupplierFormSchema = z.object({
   supplierAddress: z.string({
     invalid_type_error: 'Please enter a valid address.',
   }),
-  oStatus: z.enum(['active', 'inactive'], {
-    invalid_type_error: 'Please select a status.',
-  }),
-  pStatus: z.enum(['pending', 'processed'], {
-    invalid_type_error: 'Please select a payment status.',
-  }),
-  date: z.string(),
 });
 
-const CreateSupplier = SupplierFormSchema.omit({ id: true, date: true });
-const UpdateSupplier = SupplierFormSchema.omit({ id: true, date: true });
+const CreateSupplier = SupplierFormSchema.omit({ id: true});
+const UpdateSupplier = SupplierFormSchema.omit({ id: true});
 
-export type SState = {
+export type SupplierState = {
   errors?: {
     supplierName?: string[];
     supplierEmail?: string[];
     supplierPhone?: string[];
     supplierAddress?: string[];
-    oStatus?: string[];
-    pStatus?: string[];
   };
   message?: string | null;
 };
 
-export async function createSupplier(prevState: SState, formData: FormData) {
+export async function createSupplier(prevState: SupplierState, formData: FormData) {
   // Validate form using Zod
   const validatedFields = CreateSupplier.safeParse({
     supplierName: formData.get('supplierName'),
@@ -223,7 +214,7 @@ export async function createSupplier(prevState: SState, formData: FormData) {
   }
 
   // Prepare data for insertion into the database
-  const { supplierName, supplierEmail, supplierPhone, supplierAddress, oStatus, pStatus } = validatedFields.data;
+  const { supplierName, supplierEmail, supplierPhone, supplierAddress} = validatedFields.data;
   const date = new Date().toISOString().split('T')[0];
 
   // Insert data into the database
@@ -249,7 +240,7 @@ export async function createSupplier(prevState: SState, formData: FormData) {
 
 export async function updateSupplier(
   id: string,
-  prevState: SState,
+  prevState: SupplierState,
   formData: FormData,
 ) {
   // Validate form using Zod
@@ -258,8 +249,6 @@ export async function updateSupplier(
     supplierEmail: formData.get('supplierEmail'),
     supplierPhone: formData.get('supplierPhone'),
     supplierAddress: formData.get('supplierAddress'),
-    oStatus: formData.get('oStatus'),
-    pStatus: formData.get('pStatus'),
   });
 
   // If form validation fails, return errors early. Otherwise, continue.
@@ -270,7 +259,7 @@ export async function updateSupplier(
     };
   }
 
-  const { supplierName, supplierEmail, supplierPhone, supplierAddress, oStatus, pStatus } = validatedFields.data;
+  const { supplierName, supplierEmail, supplierPhone, supplierAddress } = validatedFields.data;
 
   try {
     // Fetch the existing supplier
