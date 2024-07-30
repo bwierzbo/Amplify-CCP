@@ -38,9 +38,9 @@ const schema = a.schema({
     Suppliers: a.model({
       id: a.id(),
       name: a.string().required(),
-      email: a.email(),
-      phone: a.phone(),
-      address: a.string(),
+      email: a.email().required(),
+      phone: a.phone().required(),
+      address: a.string().required(),
     }).authorization((allow) => [allow.publicApiKey()]),
 
     
