@@ -14,6 +14,12 @@ import {
   ChevronUpIcon,
   ClipboardDocumentIcon,
   DocumentTextIcon,
+  WrenchIcon,
+  ListBulletIcon,
+  ScaleIcon,
+  Cog6ToothIcon,
+  BookOpenIcon,
+
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -35,19 +41,19 @@ const links: NavLinkType[] = [
     children: [
       { name: 'Apple Varieties', href: '/dashboard/orchardmanagement/applevarieties', icon: SunIcon },
       { name: 'Tree Management', href: '/dashboard/orchardmanagement/treemanagement', icon: BeakerIcon },
-      { name: 'Havest Management', href: '/dashboard/orchardmanagement/harvestmanagement'},
-      { name: 'Maintenance', href: '/dashboard/orchardmanagement/maintenance'},
+      { name: 'Havest Management', href: '/dashboard/orchardmanagement/harvestmanagement', icon: ClipboardDocumentIcon},
+      { name: 'Maintenance', href: '/dashboard/orchardmanagement/maintenance', icon: WrenchIcon},
     ],
   },
   {
     name: 'Production',
     href: '/dashboard/production',
-    icon: ClipboardDocumentIcon,
+    icon: Cog6ToothIcon,
     children: [
-      { name: 'Inventory', href: '/dashboard/production/inventory', icon: TruckIcon },
+      { name: 'Inventory', href: '/dashboard/production/inventory', icon: ListBulletIcon },
       { name: 'Suppliers', href: '/dashboard/production/suppliers', icon: TruckIcon },
-      { name: 'Recipes', href: '/dashboard/production/recipes', icon: TruckIcon },
-      { name: 'Liquid Tracking', href: '/dashboard/production/liquidtracking', icon: DocumentDuplicateIcon },
+      { name: 'Recipes', href: '/dashboard/production/recipes', icon: BookOpenIcon },
+      { name: 'Liquid Tracking', href: '/dashboard/production/liquidtracking', icon: ScaleIcon },
     ],
   },
   {
