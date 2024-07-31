@@ -4,7 +4,6 @@ import { useState } from 'react';
 import {
   UserGroupIcon,
   HomeIcon,
-  DocumentDuplicateIcon,
   SunIcon,
   BeakerIcon,
   TruckIcon,

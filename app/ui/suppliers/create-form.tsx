@@ -34,7 +34,7 @@ export default function SupplierForm() {
           <div className="relative">
             <input
               id="name"
-              name="supplierName"
+              name="name"
               type="text"
               placeholder="Enter supplier name"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
@@ -44,8 +44,8 @@ export default function SupplierForm() {
           </div>
 
           <div id="name-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.supplierName &&
-              state.errors.supplierName.map((error: string) => (
+            {state.errors?.name &&
+              state.errors.name.map((error: string) => (
                 <p className="mt-2 text-sm text-red-500" key={error}>
                   {error}
                 </p>
@@ -61,7 +61,7 @@ export default function SupplierForm() {
           <div className="relative">
             <input
               id="email"
-              name="supplierEmail"
+              name="email"
               type="email"
               placeholder="Enter supplier email"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
@@ -71,8 +71,8 @@ export default function SupplierForm() {
           </div>
 
           <div id="email-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.supplierEmail &&
-              state.errors.supplierEmail.map((error: string) => (
+            {state.errors?.email &&
+              state.errors.email.map((error: string) => (
                 <p className="mt-2 text-sm text-red-500" key={error}>
                   {error}
                 </p>
@@ -88,7 +88,7 @@ export default function SupplierForm() {
           <div className="relative">
             <input
               id="phone"
-              name="supplierPhone"
+              name="phone"
               type="text"
               placeholder="Enter supplier phone number"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
@@ -98,8 +98,8 @@ export default function SupplierForm() {
           </div>
 
           <div id="phone-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.supplierPhone &&
-              state.errors.supplierPhone.map((error: string) => (
+            {state.errors?.phone &&
+              state.errors.phone.map((error: string) => (
                 <p className="mt-2 text-sm text-red-500" key={error}>
                   {error}
                 </p>
@@ -115,7 +115,7 @@ export default function SupplierForm() {
           <div className="relative">
             <input
               id="address"
-              name="supplierAddress"
+              name="address"
               type="text"
               placeholder="Enter supplier address"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
@@ -125,8 +125,8 @@ export default function SupplierForm() {
           </div>
 
           <div id="address-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.supplierAddress &&
-              state.errors.supplierAddress.map((error: string) => (
+            {state.errors?.address &&
+              state.errors.address.map((error: string) => (
                 <p className="mt-2 text-sm text-red-500" key={error}>
                   {error}
                 </p>

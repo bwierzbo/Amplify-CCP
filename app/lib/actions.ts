@@ -167,16 +167,16 @@ export async function deleteInvoice(id: string) {
 
 const SupplierFormSchema = z.object({
   id: z.string(),
-  supplierName: z.string({
+  name: z.string({
     invalid_type_error: 'Please enter a supplier name.',
   }),
-  supplierEmail: z.string().email({
+  email: z.string().email({
     message: 'Please enter a valid email address.',
   }),
-  supplierPhone: z.string({
+  phone: z.string({
     invalid_type_error: 'Please enter a valid phone number.',
   }),
-  supplierAddress: z.string({
+  address: z.string({
     invalid_type_error: 'Please enter a valid address.',
   }),
 });
@@ -186,54 +186,46 @@ const UpdateSupplier = SupplierFormSchema.omit({ id: true});
 
 export type SupplierState = {
   errors?: {
-    supplierName?: string[];
-    supplierEmail?: string[];
-    supplierPhone?: string[];
-    supplierAddress?: string[];
+    name?: string[];
+    email?: string[];
+    phone?: string[];
+    address?: string[];
   };
   message?: string | null;
 };
 
 export async function createSupplier(prevState: SupplierState, formData: FormData) {
-  // Validate form using Zod
+  console.log('Creating supplier...');
+
   const validatedFields = CreateSupplier.safeParse({
-    supplierName: formData.get('supplierName'),
-    supplierEmail: formData.get('supplierEmail'),
-    supplierPhone: formData.get('supplierPhone'),
-    supplierAddress: formData.get('supplierAddress'),
+    name: formData.get('name'),
+    email: formData.get('email'),
+    phone: formData.get('phone'),
+    address: formData.get('address'),
   });
 
-  // If form validation fails, return errors early. Otherwise, continue.
   if (!validatedFields.success) {
+    console.log('Validation failed:', validatedFields.error.flatten().fieldErrors);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Create Supplier.',
+      message: 'Missing Fields. Failed to Create Invoice.',
     };
   }
 
-  // Prepare data for insertion into the database
-  const { supplierName, supplierEmail, supplierPhone, supplierAddress} = validatedFields.data;
+  const { name, email, phone, address } = validatedFields.data;
 
-  // Insert data into the database
   try {
-    await client.models.Suppliers.create({
-      name: supplierName,
-      email: supplierEmail,
-      phone: supplierPhone,
-      address: supplierAddress,
-    });
-    
+    await client.models.Suppliers.create({ name: name, email: email, phone: phone, address: address });
   } catch (error) {
-    // If a database error occurs, return a more specific error.
-    return {
-      message: 'Database Error: Failed to Create Supplier.',
-    };
+    console.error('Database Error:', error);
+    return { message: 'Database Error: Failed to Create Supplier.' };
   }
+  console.log("created Supplier")
 
-  // Revalidate the cache for the suppliers page and redirect the user.
   revalidatePath('/dashboard/production/suppliers');
   redirect('/dashboard/production/suppliers');
 }
+
 
 
 export async function updateSupplier(
@@ -257,7 +249,7 @@ export async function updateSupplier(
     };
   }
 
-  const { supplierName, supplierEmail, supplierPhone, supplierAddress } = validatedFields.data;
+  const { name, email, phone, address } = validatedFields.data;
 
   try {
     // Fetch the existing supplier
@@ -272,10 +264,10 @@ export async function updateSupplier(
     // Update the supplier
     await client.models.Suppliers.update({
       id: id,
-      name: supplierName,
-      email: supplierEmail,
-      phone: supplierPhone,
-      address: supplierAddress,
+      name: name,
+      email: email,
+      phone: phone,
+      address: address,
     });
   } catch (error) {
     return { message: 'Database Error: Failed to Update Supplier.' };

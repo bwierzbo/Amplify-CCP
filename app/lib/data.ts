@@ -387,16 +387,8 @@ export async function fetchSuppliers(): Promise<Supplier[]> {
 }
 
 
-export async function fetchSuppliersPages(query: string) {
+export async function fetchSuppliersPages(query: string): Promise<number> {
   try {
-    const supplier1 = await client.models.Suppliers.create({
-      name: 'Supplier three',
-        email: 'supplier1@example.com',
-        phone: '123-456-7890',
-        address: '123 Main St, Hometown, USA',
-    });
-
-
     // Fetch all suppliers
     const supplierResponse = await client.models.Suppliers.list();
     const supplierData = supplierResponse.data;
@@ -407,27 +399,23 @@ export async function fetchSuppliersPages(query: string) {
       throw new Error('Error fetching supplier data.');
     }
 
-    // Fetch all apple varieties (if needed for filtering)
-    const appleVarietyResponse = await client.models.AppleVarieties.list();
-    const appleVarietyData = appleVarietyResponse.data;
-    const appleVarietyErrors = appleVarietyResponse.errors;
-
-    if (appleVarietyErrors) {
-      console.error('Error fetching apple varieties:', appleVarietyErrors);
-      throw new Error('Error fetching apple variety data.');
-    }
+    console.log('Fetched suppliers data:', supplierData); // Debugging
 
     // Filter suppliers based on the query
     const filteredSuppliers = supplierData.filter(supplier => {
       return (
         supplier.name.toLowerCase().includes(query.toLowerCase()) ||
         supplier.email.toLowerCase().includes(query.toLowerCase()) ||
-        supplier.phone.toString().includes(query) ||
+        supplier.phone.toLowerCase().includes(query.toLowerCase()) ||
         supplier.address.toLowerCase().includes(query.toLowerCase())
-        );
+      );
     });
 
+    console.log('Filtered suppliers data:', filteredSuppliers); // Debugging
+
     const totalPages = Math.ceil(filteredSuppliers.length / ITEMS_PER_PAGE);
+    console.log('Total pages calculated:', totalPages); // Debugging
+
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
@@ -479,21 +467,24 @@ export async function fetchFilteredSuppliers(query: string, currentPage: number)
       throw new Error('Error fetching supplier data.');
     }
 
+    console.log('Fetched suppliers data:', supplierData); // Debugging
+
     // Filter suppliers based on the query
     const filteredSuppliers = supplierData.filter(supplier => {
       return (
         supplier.name.toLowerCase().includes(query.toLowerCase()) ||
         supplier.email.toLowerCase().includes(query.toLowerCase()) ||
-        supplier.phone.toString().includes(query) ||
+        supplier.phone.toLowerCase().includes(query.toLowerCase()) ||
         supplier.address.toLowerCase().includes(query.toLowerCase())
       );
     });
 
-    // Sort suppliers by name in ascending order
-    filteredSuppliers.sort((a, b) => a.name.localeCompare(b.name));
+    console.log('Filtered suppliers data:', filteredSuppliers); // Debugging
 
     // Implement pagination
     const paginatedSuppliers = filteredSuppliers.slice(offset, offset + ITEMS_PER_PAGE);
+
+    console.log('Paginated suppliers data:', paginatedSuppliers); // Debugging
 
     return paginatedSuppliers as Supplier[];
   } catch (error) {

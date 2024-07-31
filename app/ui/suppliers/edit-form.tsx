@@ -32,16 +32,16 @@ export default function SupplierCreateForm() {
           </label>
           <div className="relative">
             <input
-              id="supplierName"
-              name="supplierName"
+              id="name"
+              name="name"
               type="text"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-3 text-sm outline-2 placeholder:text-gray-500"
               placeholder="Enter supplier name"
             />
           </div>
-          {state.errors?.supplierName && (
+          {state.errors?.name && (
             <p className="mt-2 text-sm text-red-500">
-              {state.errors.supplierName}
+              {state.errors.name}
             </p>
           )}
         </div>
@@ -53,16 +53,16 @@ export default function SupplierCreateForm() {
           </label>
           <div className="relative">
             <input
-              id="supplierEmail"
-              name="supplierEmail"
+              id="email"
+              name="email"
               type="email"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-3 text-sm outline-2 placeholder:text-gray-500"
               placeholder="Enter supplier email"
             />
           </div>
-          {state.errors?.supplierEmail && (
+          {state.errors?.email && (
             <p className="mt-2 text-sm text-red-500">
-              {state.errors.supplierEmail}
+              {state.errors.email}
             </p>
           )}
         </div>
@@ -74,16 +74,16 @@ export default function SupplierCreateForm() {
           </label>
           <div className="relative">
             <input
-              id="supplierPhone"
-              name="supplierPhone"
+              id="phone"
+              name="phone"
               type="text"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-3 text-sm outline-2 placeholder:text-gray-500"
               placeholder="Enter supplier phone"
             />
           </div>
-          {state.errors?.supplierPhone && (
+          {state.errors?.phone && (
             <p className="mt-2 text-sm text-red-500">
-              {state.errors.supplierPhone}
+              {state.errors.phone}
             </p>
           )}
         </div>
@@ -95,16 +95,16 @@ export default function SupplierCreateForm() {
           </label>
           <div className="relative">
             <input
-              id="supplierAddress"
-              name="supplierAddress"
+              id="address"
+              name="address"
               type="text"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-3 text-sm outline-2 placeholder:text-gray-500"
               placeholder="Enter supplier address"
             />
           </div>
-          {state.errors?.supplierAddress && (
+          {state.errors?.address && (
             <p className="mt-2 text-sm text-red-500">
-              {state.errors.supplierAddress}
+              {state.errors.address}
             </p>
           )}
         </div>

@@ -229,7 +229,7 @@ export function AppleVarietiesTableSkeleton() {
     </div>
   );
 }
-export function SupplierTableRowSkeleton() {
+export function SuppliersTableRowSkeleton() {
   return (
     <tr className="w-full border-b border-gray-100 last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg">
       {/* Supplier Name */}
@@ -323,12 +323,12 @@ export function SuppliersTableSkeleton() {
               </tr>
             </thead>
             <tbody className="bg-white">
-              <SupplierTableRowSkeleton />
-              <SupplierTableRowSkeleton />
-              <SupplierTableRowSkeleton />
-              <SupplierTableRowSkeleton />
-              <SupplierTableRowSkeleton />
-              <SupplierTableRowSkeleton />
+              <SuppliersTableRowSkeleton />
+              <SuppliersTableRowSkeleton />
+              <SuppliersTableRowSkeleton />
+              <SuppliersTableRowSkeleton />
+              <SuppliersTableRowSkeleton />
+              <SuppliersTableRowSkeleton />
             </tbody>
           </table>
         </div>
