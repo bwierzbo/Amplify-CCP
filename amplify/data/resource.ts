@@ -19,7 +19,6 @@ const schema = a.schema({
       id: a.id(),
       name: a.string().required(),
       email: a.email().required(),
-      image_url: a.string().required(),
     }).authorization((allow) => [allow.publicApiKey()]),
 
     Invoice: a.model({

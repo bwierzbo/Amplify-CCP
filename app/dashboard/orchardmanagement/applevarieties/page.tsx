@@ -1,5 +1,5 @@
 // app/dashboard/production/orchard/page.tsx
-import Pagination from '@/app/ui/invoices/pagination';
+import Pagination from '@/app/ui/sales/invoices/pagination';
 import Search from '@/app/ui/search';
 import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';

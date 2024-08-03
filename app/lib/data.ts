@@ -288,7 +288,9 @@ export async function fetchCustomers(): Promise<CustomerField[]> {
 }
 
 
-export async function fetchFilteredCustomers(query: string): Promise<FormattedCustomersTable[]> {
+export async function fetchFilteredCustomers(query: string, currentPage: number): Promise<FormattedCustomersTable[]> {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
   try {
     // Fetch all customers
     const customerResponse = await client.models.Customer.list();
@@ -334,7 +336,6 @@ export async function fetchFilteredCustomers(query: string): Promise<FormattedCu
         id: customer.id as string,
         name: customer.name,
         email: customer.email,
-        image_url: customer.image_url,
         total_invoices: totalInvoices,
         total_pending: totalPending,
         total_paid: totalPaid, 

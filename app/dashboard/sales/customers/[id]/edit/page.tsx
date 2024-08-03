@@ -1,6 +1,6 @@
-import Form from '@/app/ui/suppliers/edit-form';
+import Form from '@/app/ui/sales/customers/edit-form';
 import Breadcrumbs from '@/app/ui/sales/invoices/breadcrumbs';
-import { fetchSupplierById, fetchSuppliers } from '@/app/lib/data';
+import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 
 
@@ -9,8 +9,8 @@ import { notFound } from 'next/navigation';
 export default async function Page({ params }: { params: { id: string } }) {
     const id = params.id;
     const [invoice, customers] = await Promise.all([
-        fetchSupplierById(id),
-        fetchSuppliers(),
+        fetchInvoiceById(id),
+        fetchCustomers(),
       ]);
 
       if (!invoice) {
@@ -20,15 +20,15 @@ export default async function Page({ params }: { params: { id: string } }) {
     <main>
       <Breadcrumbs
         breadcrumbs={[
-          { label: 'Suppliers', href: '/dashboard/production/suppliers' },
+          { label: 'Invoices', href: '/dashboard/invoices' },
           {
-            label: 'Edit Supplier',
-            href: `/dashboard/production/suppliers/${id}/edit`,
+            label: 'Edit Invoice',
+            href: `/dashboard/invoices/${id}/edit`,
             active: true,
           },
         ]}
       />
-      <Form />
+      <Form invoice={invoice} customers={customers} />
     </main>
   );
 }
