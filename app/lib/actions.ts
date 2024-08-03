@@ -194,6 +194,8 @@ export type SupplierState = {
   message?: string | null;
 };
 
+
+
 export async function createSupplier(prevState: SupplierState, formData: FormData) {
   console.log('Creating supplier...');
 
@@ -215,7 +217,11 @@ export async function createSupplier(prevState: SupplierState, formData: FormDat
   const { name, email, phone, address } = validatedFields.data;
 
   try {
-    await client.models.Suppliers.create({ name: name, email: email, phone: phone, address: address });
+    await client.models.Suppliers.create({
+       name: name, 
+       email: email, 
+       phone: phone, 
+       address: address });
   } catch (error) {
     console.error('Database Error:', error);
     return { message: 'Database Error: Failed to Create Supplier.' };

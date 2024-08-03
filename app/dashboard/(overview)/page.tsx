@@ -1,3 +1,8 @@
+"use client";
+
+import { useAuthenticator } from '@aws-amplify/ui-react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import RevenueChart from '@/app/ui/dashboard/revenue-chart';
 import { Card } from '@/app/ui/dashboard/cards';
 import { fetchCardData } from '@/app/lib/data';

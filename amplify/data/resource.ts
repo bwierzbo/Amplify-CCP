@@ -39,8 +39,8 @@ const schema = a.schema({
       id: a.id(),
       name: a.string().required(),
       email: a.email().required(),
-      phone: a.phone().required(),
-      address: a.string().required(),
+      phone: a.phone(),
+      address: a.string(),
     }).authorization((allow) => [allow.publicApiKey()]),
 
     
