@@ -67,7 +67,6 @@ export async function fetchLatestInvoices() {
       return {
         ...invoice,
         name: customerData.name,
-        image_url: customerData.image_url,
         email: customerData.email,
         amount: formatCurrency(invoice.amount),
       };
@@ -178,7 +177,6 @@ export async function fetchFilteredInvoices(query: string, currentPage: number):
         customer_id: invoice.customer_id, // Include the customer_id
         name: customer ? customer.name : '',
         email: customer ? customer.email : '',
-        image_url: customer ? customer.image_url : '',
       };
     });
 
