@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   UserGroupIcon,
   HomeIcon,
@@ -79,6 +79,14 @@ function NavLink({
 }) {
   const LinkIcon = link.icon;
   const isActive = activePath === link.href || (link.name !== 'Home' && activePath.startsWith(link.href));
+  const childrenRef = useRef<HTMLDivElement>(null);
+  const [childrenHeight, setChildrenHeight] = useState(0);
+
+  useEffect(() => {
+    if (childrenRef.current) {
+      setChildrenHeight(childrenRef.current.scrollHeight);
+    }
+  }, [isOpen]);
 
   return (
     <div className="w-full">
@@ -90,6 +98,7 @@ function NavLink({
           href={link.href}
           className={clsx(
             'flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3',
+            'transition-all duration-300 ease-in-out', // Add transition
             {
               'bg-sky-100 text-blue-600': isActive,
             }
@@ -98,12 +107,22 @@ function NavLink({
         >
           {LinkIcon && <LinkIcon className="w-6" />}
           <p className="hidden md:block">{link.name}</p>
-          {link.children &&
-            (isOpen ? <ChevronUpIcon className="w-5" /> : <ChevronDownIcon className="w-5" />)}
+          {link.children && (
+            <ChevronDownIcon
+              className={clsx(
+                'w-5 transition-transform duration-300 ease-in-out', // Add transition
+                { 'rotate-180': isOpen }
+              )}
+            />
+          )}
         </Link>
       </div>
-      {isOpen && link.children && (
-        <div className="ml-4">
+      {link.children && (
+        <div
+          ref={childrenRef}
+          className="ml-4 overflow-hidden transition-all duration-300 ease-in-out"
+          style={{ maxHeight: isOpen ? `${childrenHeight}px` : '0px' }}
+        >
           {link.children.map((child) => (
             <NavLink
               key={child.name}
