@@ -90,6 +90,7 @@ export type Supplier = {
   email: string;
   phone: string;
   address: string;
+  type: string[];
 };
 
 export type SupplierAppleVariety = {

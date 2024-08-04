@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { InboxIcon, PhoneIcon, MapIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { InboxIcon, PhoneIcon, MapIcon, UserCircleIcon, SunIcon, BeakerIcon, ArchiveBoxIcon, EllipsisHorizontalCircleIcon } from '@heroicons/react/24/outline';
 
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
@@ -124,6 +124,39 @@ export default function SupplierForm() {
           <div id="address-error" aria-live="polite" aria-atomic="true">
             {state.errors?.address &&
               state.errors.address.map((error: string) => (
+                <p className="mt-2 text-sm text-red-500" key={error}>
+                  {error}
+                </p>
+              ))}
+          </div>
+        </div>
+
+        {/* Supplier Type */}
+        <div className="mb-4">
+          <label className="mb-2 block text-sm font-medium">
+            Supplier Type
+          </label>
+          <div className="flex flex-wrap gap-4">
+            {[
+              { name: 'apples', icon: SunIcon, label: 'Apples' },
+              { name: 'additives', icon: BeakerIcon, label: 'Additives' },
+              { name: 'packaging', icon: ArchiveBoxIcon, label: 'Packaging' },
+              { name: 'other', icon: EllipsisHorizontalCircleIcon, label: 'Other' },
+            ].map(({ name, icon: Icon, label }) => (
+              <label key={name} className="flex items-center space-x-2 cursor-pointer bg-white rounded-md p-2 border border-gray-200">
+                <Icon className="h-6 w-6 text-gray-500" />
+                <span className="text-sm">{label}</span>
+                <input
+                  type="checkbox"
+                  name={`type_${name}`}
+                  className="form-checkbox h-5 w-5 text-blue-600 ml-2"
+                />
+              </label>
+            ))}
+          </div>
+          <div id="type-error" aria-live="polite" aria-atomic="true">
+            {state.errors?.type &&
+              state.errors.type.map((error: string) => (
                 <p className="mt-2 text-sm text-red-500" key={error}>
                   {error}
                 </p>

@@ -373,6 +373,7 @@ export async function fetchSuppliers(): Promise<Supplier[]> {
         email: supplier.email,
         phone: supplier.phone || '',
         address: supplier.address || '',
+        type: supplier.type?.filter((t): t is string => t !== null) || [],
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -404,7 +405,8 @@ export async function fetchSuppliersPages(query: string): Promise<number> {
         supplier.name.toLowerCase().includes(query.toLowerCase()) ||
         supplier.email.toLowerCase().includes(query.toLowerCase()) ||
         (supplier.phone?.toLowerCase() ?? '').includes(query.toLowerCase()) ||
-        (supplier.address?.toLowerCase() ?? '').includes(query.toLowerCase())
+        (supplier.address?.toLowerCase() ?? '').includes(query.toLowerCase()) ||
+        supplier.type?.some(type => type?.toLowerCase().includes(query.toLowerCase())) || false
       );
     });
 
@@ -439,6 +441,7 @@ export async function fetchSupplierById(id: string): Promise<Supplier> {
       email: supplierData.email,
       phone: supplierData.phone || '',
       address: supplierData.address || '',
+      type: supplierData.type?.filter((t): t is string => t !== null) || [],
     };
 
     return supplier;
@@ -471,16 +474,26 @@ export async function fetchFilteredSuppliers(query: string, currentPage: number)
         supplier.name.toLowerCase().includes(query.toLowerCase()) ||
         supplier.email.toLowerCase().includes(query.toLowerCase()) ||
         (supplier.phone?.toLowerCase() ?? '').includes(query.toLowerCase()) ||
-        (supplier.address?.toLowerCase() ?? '').includes(query.toLowerCase())
+        (supplier.address?.toLowerCase() ?? '').includes(query.toLowerCase()) ||
+        supplier.type?.some(type => type?.toLowerCase().includes(query.toLowerCase())) || false
       );
     });
 
 
     // Implement pagination
-    const paginatedSuppliers = filteredSuppliers.slice(offset, offset + ITEMS_PER_PAGE);
+    const paginatedSuppliers = filteredSuppliers
+      .slice(offset, offset + ITEMS_PER_PAGE)
+      .map(supplier => ({
+        id: supplier.id as string,
+        name: supplier.name,
+        email: supplier.email,
+        phone: supplier.phone || '',
+        address: supplier.address || '',
+        type: supplier.type?.filter((t): t is string => t !== null) || [],
+      }));
 
 
-    return paginatedSuppliers as Supplier[];
+    return paginatedSuppliers;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch suppliers.');
@@ -520,154 +533,3 @@ export async function fetchAppleVarieties(): Promise<AppleVarieties[]> {
   }
 }
 
-
-
-export async function fetchFilteredAppleVarieties(query: string, currentPage: number): Promise<AppleVarieties[]> {
-  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-
-  try {
-    // Fetch all apple varieties
-    const appleVarietyResponse = await client.models.AppleVarieties.list();
-    const appleVarietyData = appleVarietyResponse.data;
-    const appleVarietyErrors = appleVarietyResponse.errors;
-
-    if (appleVarietyErrors) {
-      console.error('Error fetching apple varieties:', appleVarietyErrors);
-      throw new Error('Error fetching apple variety data.');
-    }
-
-    // Fetch all harvest records
-    const harvestRecordResponse = await client.models.HarvestRecords.list();
-    const harvestRecordData = harvestRecordResponse.data;
-    const harvestRecordErrors = harvestRecordResponse.errors;
-
-    if (harvestRecordErrors) {
-      console.error('Error fetching harvest records:', harvestRecordErrors);
-      throw new Error('Error fetching harvest record data.');
-    }
-
-    // Filter apple varieties based on the query
-    const filteredAppleVarieties = appleVarietyData.filter(variety => {
-      return (
-        variety.name.toLowerCase().includes(query.toLowerCase()) ||
-        variety.description.toLowerCase().includes(query.toLowerCase()) ||
-        variety.harvest_season.toLowerCase().includes(query.toLowerCase())
-      );
-    });
-
-    // Calculate the total quantity and quality for each apple variety
-    const appleVarieties = filteredAppleVarieties.map(variety => {
-      const varietyHarvestRecords = harvestRecordData.filter(record => record.apple_variety_id === variety.id);
-
-      const totalQuantity = varietyHarvestRecords.reduce((sum, record) => sum + record.quantity, 0);
-      const qualityRatings = varietyHarvestRecords.map(record => record.quality);
-
-      // Format total quantity as a string
-      const formattedTotalQuantity = totalQuantity.toString();
-
-      // Join quality ratings as a comma-separated string
-      const formattedQualityRatings = qualityRatings.join(', ');
-
-      return {
-        id: variety.id as string,
-        name: variety.name,
-        description: variety.description,
-        harvest_season: variety.harvest_season,
-        total_quantity: formattedTotalQuantity,
-        quality_ratings: formattedQualityRatings,
-      };
-    });
-
-    // Implement pagination
-    const paginatedAppleVarieties = appleVarieties.slice(offset, offset + ITEMS_PER_PAGE);
-
-    // Sort the apple varieties by name
-    paginatedAppleVarieties.sort((a, b) => a.name.localeCompare(b.name));
-
-    return paginatedAppleVarieties;
-  } catch (err) {
-    console.error('Database Error:', err);
-    throw new Error('Failed to fetch apple varieties.');
-  }
-}
-
-export async function fetchAppleVarietiesPages(query: string): Promise<number> {
-  try {
-    // Fetch all apple varieties
-    const appleVarietyResponse = await client.models.AppleVarieties.list();
-    const appleVarietyData = appleVarietyResponse.data;
-    const appleVarietyErrors = appleVarietyResponse.errors;
-
-    if (appleVarietyErrors) {
-      console.error('Error fetching apple varieties:', appleVarietyErrors);
-      throw new Error('Error fetching apple variety data.');
-    }
-
-    // Filter apple varieties based on the query
-    const filteredAppleVarieties = appleVarietyData.filter(variety => {
-      return (
-        variety.name.toLowerCase().includes(query.toLowerCase()) ||
-        variety.description.toLowerCase().includes(query.toLowerCase()) ||
-        variety.harvest_season.toLowerCase().includes(query.toLowerCase())
-      );
-    });
-
-    const totalPages = Math.ceil(filteredAppleVarieties.length / ITEMS_PER_PAGE);
-    return totalPages;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch total number of apple varieties.');
-  }
-}
-
-export async function fetchOrchardPlots(): Promise<OrchardPlot[]> {
-  try {
-    const response = await client.models.OrchardPlot.list();
-    if (response.errors) {
-      throw new Error('Error fetching orchard plots');
-    }
-
-    const orchardPlots: OrchardPlot[] = response.data.map(plot => ({
-      id: plot.id || '',
-      name: plot.name,
-      trees: [],
-    }));
-
-    const treeResponse = await client.models.Tree.list();
-    if (treeResponse.errors) {
-      throw new Error('Error fetching trees');
-    }
-
-    treeResponse.data.forEach(tree => {
-      const plot = orchardPlots.find(p => p.id === tree.plotId);
-      if (plot) {
-        plot.trees.push(tree as Tree);
-      }
-    });
-
-    return orchardPlots;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch orchard plots.');
-  }
-}
-
-export async function fetchTrees(): Promise<Tree[]> {
-  try {
-    const response = await client.models.Tree.list();
-    if (response.errors) {
-      throw new Error('Error fetching trees');
-    }
-    return response.data.map(tree => ({
-      id: tree.id as string,
-      plotId: tree.plotId,
-      name: tree.name,
-      yearPlanted: tree.yearPlanted,
-      rootstock: tree.rootstock,
-      scionwood: tree.scionwood,
-    })) as Tree[];
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch trees.');
-  }
-}

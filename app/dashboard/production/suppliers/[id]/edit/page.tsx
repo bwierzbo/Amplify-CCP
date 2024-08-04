@@ -8,12 +8,9 @@ import { notFound } from 'next/navigation';
  
 export default async function Page({ params }: { params: { id: string } }) {
     const id = params.id;
-    const [invoice, customers] = await Promise.all([
-        fetchSupplierById(id),
-        fetchSuppliers(),
-      ]);
+    const supplier = await fetchSupplierById(id);
 
-      if (!invoice) {
+      if (!supplier) {
         notFound();
       }
   return (
@@ -28,7 +25,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           },
         ]}
       />
-      <Form />
+      <Form supplier={supplier} />
     </main>
   );
 }

@@ -40,6 +40,7 @@ const schema = a.schema({
       email: a.email().required(),
       phone: a.phone(),
       address: a.string(),
+      type: a.string().array().required(),
     }).authorization((allow) => [allow.publicApiKey()]),
 
     
@@ -58,28 +59,7 @@ const schema = a.schema({
       harvest_season: a.string().required(), //The typical season or time period when this variety is harvested.
     }).authorization((allow) => [allow.publicApiKey()]),
 
-    HarvestRecords: a.model({
-      id: a.id(),
-      apple_variety_id: a.id().required(), //Foreign key linking to the AppleVarieties table.
-      quantity: a.integer().required(), //Quantity of apples harvested (in lbs buschels or bins).
-      quality: a.string().required(), //Quality rating of the harvested apples (e.g., Grade A, B, C). Up to client
-      harvest_date: a.date().required(), //Date when the apples were harvested.
-    }).authorization((allow) => [allow.publicApiKey()]),
 
-    OrchardPlot: a.model({
-      id: a.id(),
-      name: a.string().required(),
-      treeIDs: a.id().array().required(),
-    }).authorization((allow) => [allow.publicApiKey()]),
-  
-    Tree: a.model({
-      id: a.id(),
-      plotId: a.id().required(),
-      name: a.string().required(),
-      yearPlanted: a.string().required(),
-      rootstock: a.string().required(),
-      scionwood: a.string().required(),
-    }).authorization((allow) => [allow.publicApiKey()]),
 
     
 });

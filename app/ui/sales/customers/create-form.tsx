@@ -34,7 +34,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
         {/* Customer Name */}
         <div className="mb-4">
           <label htmlFor="name" className="mb-2 block text-sm font-medium">
-            Supplier Name
+            Customer Name
           </label>
           <input
               id="name"
@@ -56,7 +56,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
         </div>
         <div className="mb-4">
           <label htmlFor="email" className="mb-2 block text-sm font-medium">
-            Supplier Email
+            Customer Email
           </label>
           <div className="relative">
             <input

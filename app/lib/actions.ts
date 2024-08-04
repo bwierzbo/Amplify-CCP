@@ -292,6 +292,9 @@ const SupplierFormSchema = z.object({
   address: z.string({
     invalid_type_error: 'Please enter a valid address.',
   }),
+  type: z.array(z.enum(['apples', 'additives', 'packaging', 'other']), {
+    invalid_type_error: 'Please select at least one type.',
+  }).nonempty('Please select at least one type.'),
 });
 
 const CreateSupplier = SupplierFormSchema.omit({ id: true});
@@ -303,6 +306,7 @@ export type SupplierState = {
     email?: string[];
     phone?: string[];
     address?: string[];
+    type?: string[];
   };
   message?: string | null;
 };
@@ -310,37 +314,39 @@ export type SupplierState = {
 
 
 export async function createSupplier(prevState: SupplierState, formData: FormData) {
-  console.log('Creating supplier...');
 
   const validatedFields = CreateSupplier.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
     phone: formData.get('phone'),
     address: formData.get('address'),
+    type: ['apples', 'additives', 'packaging', 'other'].filter(
+      type => formData.get(`type_${type}`) === 'on'
+    ),
   });
 
   if (!validatedFields.success) {
     console.log('Validation failed:', validatedFields.error.flatten().fieldErrors);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Create Invoice.',
+      message: 'Missing Fields. Failed to Create Supplier.',
     };
   }
 
-  const { name, email, phone, address } = validatedFields.data;
+  const { name, email, phone, address, type } = validatedFields.data;
 
   try {
     await client.models.Suppliers.create({
        name: name, 
        email: email, 
        phone: phone, 
-       address: address });
+       address: address,
+       type: type,
+       });
   } catch (error) {
     console.error('Database Error:', error);
     return { message: 'Database Error: Failed to Create Supplier.' };
   }
-  console.log("created Supplier")
-
   revalidatePath('/dashboard/production/suppliers');
   redirect('/dashboard/production/suppliers');
 }
@@ -352,15 +358,14 @@ export async function updateSupplier(
   prevState: SupplierState,
   formData: FormData,
 ) {
-  // Validate form using Zod
   const validatedFields = UpdateSupplier.safeParse({
-    supplierName: formData.get('supplierName'),
-    supplierEmail: formData.get('supplierEmail'),
-    supplierPhone: formData.get('supplierPhone'),
-    supplierAddress: formData.get('supplierAddress'),
+    name: formData.get('name'),
+    email: formData.get('email'),
+    phone: formData.get('phone'),
+    address: formData.get('address'),
+    type: formData.getAll('type'),
   });
 
-  // If form validation fails, return errors early. Otherwise, continue.
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
@@ -368,25 +373,16 @@ export async function updateSupplier(
     };
   }
 
-  const { name, email, phone, address } = validatedFields.data;
+  const { name, email, phone, address, type } = validatedFields.data;
 
   try {
-    // Fetch the existing supplier
-    const supplierResponse = await client.models.Suppliers.get({ id });
-    const supplierData = supplierResponse.data;
-    const supplierErrors = supplierResponse.errors;
-
-    if (supplierErrors || !supplierData) {
-      throw new Error('Error fetching supplier data.');
-    }
-
-    // Update the supplier
     await client.models.Suppliers.update({
       id: id,
       name: name,
       email: email,
       phone: phone,
       address: address,
+      type: type,
     });
   } catch (error) {
     return { message: 'Database Error: Failed to Update Supplier.' };
@@ -526,162 +522,3 @@ export async function deleteAppleVariety(id: string) {
   }
 }
 
-const HarvestRecordSchema = z.object({
-  id: z.string(),
-  apple_variety_id: z.string({
-    invalid_type_error: 'Please select an apple variety.',
-  }),
-  quantity: z.number({
-    invalid_type_error: 'Please enter a quantity.',
-  }).int().positive({ message: 'Please enter a positive quantity.' }),
-  quality: z.string({
-    invalid_type_error: 'Please enter a quality rating.',
-  }),
-  harvest_date: z.string({
-    invalid_type_error: 'Please enter a harvest date.',
-  }),
-});
-
-
-const CreateHarvestRecord = HarvestRecordSchema.omit({ id: true });
-const UpdateHarvestRecord = HarvestRecordSchema.omit({ id: true });
-
-export type HarvestRecordState = {
-  errors?: {
-    apple_variety_id?: string[];
-    quantity?: string[];
-    quality?: string[];
-    harvest_date?: string[];
-  };
-  message?: string | null;
-};
-
-export async function createHarvestRecord(prevState: HarvestRecordState, formData: FormData) {
-  const validatedFields = CreateHarvestRecord.safeParse({
-    apple_variety_id: formData.get('apple_variety_id'),
-    quantity: Number(formData.get('quantity')),
-    quality: formData.get('quality'),
-    harvest_date: formData.get('harvest_date'),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Create Harvest Record.',
-    };
-  }
-
-  const { apple_variety_id, quantity, quality, harvest_date } = validatedFields.data;
-
-  try {
-    await client.models.HarvestRecords.create({
-      apple_variety_id: apple_variety_id,
-      quantity: quantity,
-      quality: quality,
-      harvest_date: harvest_date,
-    });
-  } catch (error) {
-    return {
-      message: 'Database Error: Failed to Create Harvest Record.',
-    };
-  }
-
-  revalidatePath('/dashboard/harvest-records');
-  redirect('/dashboard/harvest-records');
-}
-
-export async function updateHarvestRecord(id: string, prevState: HarvestRecordState, formData: FormData) {
-  const validatedFields = UpdateHarvestRecord.safeParse({
-    apple_variety_id: formData.get('apple_variety_id'),
-    quantity: Number(formData.get('quantity')),
-    quality: formData.get('quality'),
-    harvest_date: formData.get('harvest_date'),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Update Harvest Record.',
-    };
-  }
-
-  const { apple_variety_id, quantity, quality, harvest_date } = validatedFields.data;
-
-  try {
-    await client.models.HarvestRecords.update({
-      id: id,
-      apple_variety_id: apple_variety_id,
-      quantity: quantity,
-      quality: quality,
-      harvest_date: harvest_date,
-    });
-  } catch (error) {
-    return { message: 'Database Error: Failed to Update Harvest Record.' };
-  }
-
-  revalidatePath('/dashboard/harvest-records');
-  redirect('/dashboard/harvest-records');
-}
-
-export async function deleteHarvestRecord(id: string) {
-  try {
-    await client.models.HarvestRecords.delete({ id });
-    revalidatePath('/dashboard/harvest-records');
-    return { message: 'Deleted Harvest Record.' };
-  } catch (error) {
-    return { message: 'Database Error: Failed to Delete Harvest Record.' };
-  }
-}
-
-
-
-// Orchard Plot Schema
-const OrchardPlotSchema = z.object({
-  id: z.string(),
-  name: z.string({
-    invalid_type_error: 'Please enter a name.',
-  }),
-});
-
-// Tree Schema
-const TreeSchema = z.object({
-  id: z.string(),
-  plotId: z.string({
-    invalid_type_error: 'Please select an orchard plot.',
-  }),
-  name: z.string({
-    invalid_type_error: 'Please enter a name.',
-  }),
-  yearPlanted: z.string({
-    invalid_type_error: 'Please enter the year planted.',
-  }),
-  rootstock: z.string({
-    invalid_type_error: 'Please enter the type of rootstock.',
-  }),
-  scionwood: z.string({
-    invalid_type_error: 'Please enter the type of scionwood.',
-  }),
-});
-
-const CreateOrchardPlot = OrchardPlotSchema.omit({ id: true });
-const UpdateOrchardPlot = OrchardPlotSchema.omit({ id: true });
-
-const CreateTree = TreeSchema.omit({ id: true });
-const UpdateTree = TreeSchema.omit({ id: true });
-
-// ORCHARD PLOT ACTIONS
-
-
-
-export type OrchardState = {
-  errors?: {
-    name?: string[];
-    plotId?: string[];
-    yearPlanted?: string[];
-    rootstock?: string[];
-    scionwood?: string[];
-  };
-  message?: string | null;
-};
-
-// ORCHARD PLOT ACTIONS

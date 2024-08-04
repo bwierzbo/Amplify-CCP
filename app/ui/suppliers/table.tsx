@@ -1,6 +1,14 @@
 import { DeleteSupplier, UpdateSupplier } from '@/app/ui/suppliers/buttons';
 import { fetchFilteredSuppliers } from '@/app/lib/data';
 import { formatDateToLocal } from '@/app/lib/utils';
+import { SunIcon, BeakerIcon, ArchiveBoxIcon, EllipsisHorizontalCircleIcon } from '@heroicons/react/24/outline';
+
+const typeIcons = {
+  apples: SunIcon,
+  additives: BeakerIcon,
+  packaging: ArchiveBoxIcon,
+  other: EllipsisHorizontalCircleIcon,
+};
 
 export default async function SuppliersTable({
   query,
@@ -37,6 +45,12 @@ export default async function SuppliersTable({
                     <DeleteSupplier id={supplier.id} />
                   </div>
                 </div>
+                <div className="mt-2 flex items-center gap-1">
+                  {supplier.type.map((type) => {
+                    const Icon = typeIcons[type as keyof typeof typeIcons];
+                    return <Icon key={type} className="h-5 w-5 text-gray-500" />;
+                  })}
+                </div>
               </div>
             ))}
           </div>
@@ -54,6 +68,9 @@ export default async function SuppliersTable({
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Address
+                </th>
+                <th scope="col" className="px-3 py-5 font-medium">
+                  Type
                 </th>
                 <th scope="col" className="relative py-3 pl-6 pr-3">
                   <span className="sr-only">Edit</span>
@@ -79,6 +96,14 @@ export default async function SuppliersTable({
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {supplier.address}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3">
+                    <div className="flex items-center gap-1">
+                      {supplier.type.map((type) => {
+                        const Icon = typeIcons[type as keyof typeof typeIcons];
+                        return <Icon key={type} className="h-5 w-5 text-gray-500" />;
+                      })}
+                    </div>
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">

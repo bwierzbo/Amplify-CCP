@@ -4,7 +4,6 @@ import Search from '@/app/ui/search';
 import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';
 import { AppleVarietiesTableSkeleton } from '@/app/ui/skeletons'; // Adjust path as necessary
-import { fetchFilteredAppleVarieties, fetchAppleVarietiesPages } from '@/app/lib/data';
 import { Metadata } from 'next';
 import dynamic from 'next/dynamic';
 
@@ -24,8 +23,6 @@ export default async function Page({
   const query = searchParams?.query || '';
   const currentPage = Number(searchParams?.page) || 1;
 
-  const totalPages = await fetchAppleVarietiesPages(query);
-  const appleVarieties = await fetchFilteredAppleVarieties(query, currentPage);
 
   return (
     <div className="w-full">
@@ -41,7 +38,7 @@ export default async function Page({
         {/* <AppleVarietiesTable query={query} currentPage={currentPage} /> */}
       </Suspense>
       <div className="mt-5 flex w-full justify-center">
-        <Pagination totalPages={totalPages} />
+        
       </div>
     </div>
   );
