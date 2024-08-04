@@ -1,4 +1,4 @@
-import Form from '@/app/ui/suppliers/edit-form';
+import Form from '@/app/ui/production/suppliers/edit-form';
 import Breadcrumbs from '@/app/ui/sales/invoices/breadcrumbs';
 import { fetchSupplierById, fetchSuppliers } from '@/app/lib/data';
 import { notFound } from 'next/navigation';

@@ -1,7 +1,7 @@
-import Pagination from '@/app/ui/suppliers/pagination';
+import Pagination from '@/app/ui/production/suppliers/pagination';
 import Search from '@/app/ui/search';
-import Table from '@/app/ui/suppliers/table';
-import { CreateSupplier } from '@/app/ui/suppliers/buttons';
+import Table from '@/app/ui/production/suppliers/table';
+import { CreateSupplier } from '@/app/ui/production/suppliers/buttons';
 import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';
 import { SuppliersTableSkeleton } from '@/app/ui/skeletons';
@@ -22,10 +22,8 @@ export default async function Page({
 
   try {
     const totalPages = await fetchSuppliersPages(query);
-    console.log('Total Pages:', totalPages);
 
     const suppliers = await fetchFilteredSuppliers(query, currentPage);
-    console.log('Suppliers:', suppliers);
 
     if (suppliers.length === 0) {
       console.log('No suppliers found');

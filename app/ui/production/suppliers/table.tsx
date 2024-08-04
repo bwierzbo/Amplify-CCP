@@ -1,4 +1,4 @@
-import { DeleteSupplier, UpdateSupplier } from '@/app/ui/suppliers/buttons';
+import { DeleteSupplier, UpdateSupplier } from '@/app/ui/production/suppliers/buttons';
 import { fetchFilteredSuppliers } from '@/app/lib/data';
 import { formatDateToLocal } from '@/app/lib/utils';
 import { SunIcon, BeakerIcon, ArchiveBoxIcon, EllipsisHorizontalCircleIcon } from '@heroicons/react/24/outline';
@@ -8,6 +8,13 @@ const typeIcons = {
   additives: BeakerIcon,
   packaging: ArchiveBoxIcon,
   other: EllipsisHorizontalCircleIcon,
+};
+
+const typeNames = {
+  apples: 'Apples',
+  additives: 'Additives',
+  packaging: 'Packaging',
+  other: 'Other',
 };
 
 export default async function SuppliersTable({
@@ -48,7 +55,15 @@ export default async function SuppliersTable({
                 <div className="mt-2 flex items-center gap-1">
                   {supplier.type.map((type) => {
                     const Icon = typeIcons[type as keyof typeof typeIcons];
-                    return <Icon key={type} className="h-5 w-5 text-gray-500" />;
+                    const typeName = typeNames[type as keyof typeof typeNames];
+                    return (
+                      <div key={type} className="relative group">
+                        <Icon className="h-5 w-5 text-gray-500" />
+                        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          {typeName}
+                        </span>
+                      </div>
+                    );
                   })}
                 </div>
               </div>
@@ -101,7 +116,15 @@ export default async function SuppliersTable({
                     <div className="flex items-center gap-1">
                       {supplier.type.map((type) => {
                         const Icon = typeIcons[type as keyof typeof typeIcons];
-                        return <Icon key={type} className="h-5 w-5 text-gray-500" />;
+                        const typeName = typeNames[type as keyof typeof typeNames];
+                        return (
+                          <div key={type} className="relative group">
+                            <Icon className="h-5 w-5 text-gray-500" />
+                            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              {typeName}
+                            </span>
+                          </div>
+                        );
                       })}
                     </div>
                   </td>

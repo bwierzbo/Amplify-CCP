@@ -8,7 +8,9 @@ import {
   AppleVarieties,
   OrchardPlot,
   Tree,
-  Supplier
+  Supplier,
+  Item,
+  FormattedItemsTable,
 } from './definitions';
 import { formatCurrency } from './utils';
 import { generateClient } from 'aws-amplify/data';
@@ -16,6 +18,13 @@ import { type Schema } from '@/amplify/data/resource';
 import outputs from '@/amplify_outputs.json'
 import { Amplify } from 'aws-amplify';
 
+
+const supplierTypeOrder = {
+  apples: 1,
+  additives: 2,
+  packaging: 3,
+  other: 4,
+  };
 
 Amplify.configure(outputs)
  
@@ -370,7 +379,7 @@ export async function fetchSuppliers(): Promise<Supplier[]> {
       .map(supplier => ({
         id: supplier.id as string,
         name: supplier.name,
-        email: supplier.email,
+        email: supplier.email || '',
         phone: supplier.phone || '',
         address: supplier.address || '',
         type: supplier.type?.filter((t): t is string => t !== null) || [],
@@ -397,23 +406,20 @@ export async function fetchSuppliersPages(query: string): Promise<number> {
       throw new Error('Error fetching supplier data.');
     }
 
-    console.log('Fetched suppliers data:', supplierData); // Debugging
 
     // Filter suppliers based on the query
     const filteredSuppliers = supplierData.filter(supplier => {
       return (
         supplier.name.toLowerCase().includes(query.toLowerCase()) ||
-        supplier.email.toLowerCase().includes(query.toLowerCase()) ||
+        (supplier.email?.toLowerCase() ?? '').includes(query.toLowerCase()) ||
         (supplier.phone?.toLowerCase() ?? '').includes(query.toLowerCase()) ||
         (supplier.address?.toLowerCase() ?? '').includes(query.toLowerCase()) ||
         supplier.type?.some(type => type?.toLowerCase().includes(query.toLowerCase())) || false
       );
     });
 
-    console.log('Filtered suppliers data:', filteredSuppliers); // Debugging
 
     const totalPages = Math.ceil(filteredSuppliers.length / ITEMS_PER_PAGE);
-    console.log('Total pages calculated:', totalPages); // Debugging
 
     return totalPages;
   } catch (error) {
@@ -438,7 +444,7 @@ export async function fetchSupplierById(id: string): Promise<Supplier> {
     const supplier: Supplier = {
       id: supplierData.id,
       name: supplierData.name,
-      email: supplierData.email,
+      email: supplierData.email || '',
       phone: supplierData.phone || '',
       address: supplierData.address || '',
       type: supplierData.type?.filter((t): t is string => t !== null) || [],
@@ -472,7 +478,7 @@ export async function fetchFilteredSuppliers(query: string, currentPage: number)
     const filteredSuppliers = supplierData.filter(supplier => {
       return (
         supplier.name.toLowerCase().includes(query.toLowerCase()) ||
-        supplier.email.toLowerCase().includes(query.toLowerCase()) ||
+        (supplier.email?.toLowerCase() ?? '').includes(query.toLowerCase()) ||
         (supplier.phone?.toLowerCase() ?? '').includes(query.toLowerCase()) ||
         (supplier.address?.toLowerCase() ?? '').includes(query.toLowerCase()) ||
         supplier.type?.some(type => type?.toLowerCase().includes(query.toLowerCase())) || false
@@ -486,7 +492,7 @@ export async function fetchFilteredSuppliers(query: string, currentPage: number)
       .map(supplier => ({
         id: supplier.id as string,
         name: supplier.name,
-        email: supplier.email,
+        email: supplier.email || '',
         phone: supplier.phone || '',
         address: supplier.address || '',
         type: supplier.type?.filter((t): t is string => t !== null) || [],
@@ -499,6 +505,175 @@ export async function fetchFilteredSuppliers(query: string, currentPage: number)
     throw new Error('Failed to fetch suppliers.');
   }
 }
+
+export async function fetchItems(): Promise<Item[]> {
+  try {
+    const itemResponse = await client.models.Item.list();
+    const itemData = itemResponse.data;
+    const itemErrors = itemResponse.errors;
+
+    if (itemErrors) {
+      console.error('Error fetching items:', itemErrors);
+      throw new Error('Error fetching item data.');
+    }
+
+    const items: Item[] = itemData
+      .map(item => ({
+        id: item.id as string,
+        name: item.name,
+        supplier_type: item.supplier_type || '',
+        supplier_id: item.supplier_id || '',
+        quantity: item.quantity,
+        uom: item.uom,
+        price: item.price || 0,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return items;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch all items.');
+  }
+}
+
+export async function fetchFilteredItems(
+  query: string,
+  currentPage: number,
+  sortColumn: string | null,
+  sortDirection: 'asc' | 'desc',
+  supplierTypeOrder: string[]
+): Promise<FormattedItemsTable[]> {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    const itemResponse = await client.models.Item.list();
+    const itemData = itemResponse.data;
+    const itemErrors = itemResponse.errors;
+
+    if (itemErrors) {
+      console.error('Error fetching items:', itemErrors);
+      throw new Error('Error fetching item data.');
+    }
+
+    const filteredItems = itemData.filter(item => {
+      return (
+        item.name.toLowerCase().includes(query.toLowerCase()) ||
+        item.supplier_type?.toLowerCase().includes(query.toLowerCase()) ||
+        item.uom.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+
+    const sortedItems = filteredItems.sort((a, b) => {
+      if (sortColumn === 'supplier_type') {
+        const aIndex = supplierTypeOrder.indexOf(a.supplier_type || '');
+        const bIndex = supplierTypeOrder.indexOf(b.supplier_type || '');
+        return aIndex - bIndex;
+      } else if (sortColumn) {
+        const aValue = a[sortColumn as keyof typeof a];
+        const bValue = b[sortColumn as keyof typeof b];
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return sortDirection === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        }
+        return sortDirection === 'asc' ? 
+          (aValue as number) - (bValue as number) : 
+          (bValue as number) - (aValue as number);
+      }
+      return 0;
+    });
+
+    const paginatedItems = sortedItems.slice(offset, offset + ITEMS_PER_PAGE);
+
+    const formattedItems: FormattedItemsTable[] = paginatedItems.map(item => ({
+      id: item.id as string,
+      name: item.name,
+      supplier_type: item.supplier_type || '',
+      supplier_id: item.supplier_id || '',
+      quantity: item.quantity,
+      uom: item.uom,
+      price: item.price || 0, 
+    }));
+
+    return formattedItems;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch filtered items.');
+  }
+}
+
+export async function fetchItemById(id: string): Promise<Item> {
+  try {
+    const itemResponse = await client.models.Item.get({ id });
+    const itemData = itemResponse.data;
+    const itemErrors = itemResponse.errors;
+
+    if (itemErrors || !itemData) {
+      console.error('Error fetching item:', itemErrors);
+      throw new Error('Error fetching item data.');
+    }
+
+    const item: Item = {
+      id: itemData.id as string,
+      name: itemData.name,
+      supplier_type: itemData.supplier_type || '',
+      supplier_id: itemData.supplier_id || '',
+      quantity: itemData.quantity,
+      uom: itemData.uom,
+      price: itemData.price || 0,
+    };
+
+    return item;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch item.');
+  }
+}
+
+export async function fetchItemPages(query: string): Promise<number> {
+  try {
+    const itemResponse = await client.models.Item.list();
+    const itemData = itemResponse.data;
+    const itemErrors = itemResponse.errors;
+
+    if (itemErrors) {
+      console.error('Error fetching items:', itemErrors);
+      throw new Error('Error fetching item data.');
+    }
+
+    const filteredItems = itemData.filter(item => {
+      return (
+        item.name.toLowerCase().includes(query.toLowerCase()) ||
+        item.supplier_type?.toLowerCase().includes(query.toLowerCase()) ||
+        item.uom.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+
+    const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of item pages.');
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //Apple functions 
 

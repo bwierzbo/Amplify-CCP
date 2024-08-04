@@ -403,6 +403,146 @@ export async function deleteSupplier(id: string) {
   }
 }
 
+
+const ItemFormSchema = z.object({
+  id: z.string(),
+  name: z.string({
+    invalid_type_error: 'Please enter an item name.',
+  }),
+  supplier_type: z.string().optional(),
+  supplier_id: z.string().optional(),
+  quantity: z.coerce
+    .number()
+    .int()
+    .gte(0, { message: 'Quantity cannot be negative.' }),
+  uom: z.string({
+    invalid_type_error: 'Please enter a unit of measurement.',
+  }),
+  price: z.coerce
+    .number()
+    .gte(0, { message: 'Please enter a price greater than or equal to $0.' }),
+});
+
+const CreateItem = ItemFormSchema.omit({ id: true });
+const UpdateItem = ItemFormSchema.omit({ id: true });
+
+export type ItemState = {
+  errors?: {
+    name?: string[];
+    supplier_type?: string[];
+    supplier_id?: string[];
+    quantity?: string[];
+    uom?: string[];
+    price?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createItem(prevState: ItemState, formData: FormData) {
+  const validatedFields = CreateItem.safeParse({
+    name: formData.get('name'),
+    supplier_type: formData.get('supplier_type'),
+    supplier_id: formData.get('supplier_id'),
+    quantity: formData.get('quantity'),
+    uom: formData.get('uom'),
+    price: formData.get('price'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Item.',
+    };
+  }
+
+  const { name, supplier_type, supplier_id, quantity, uom, price } = validatedFields.data;
+  const priceInCents = Math.round(Number(price) * 100);
+
+  try {
+    await client.models.Item.create({
+      name,
+      supplier_type,
+      supplier_id,
+      quantity,
+      uom,
+      price: priceInCents,
+    });
+  } catch (error) {
+    return {
+      message: 'Database Error: Failed to Create Item.',
+    };
+  }
+
+  revalidatePath('/dashboard/production/inventory');
+  redirect('/dashboard/production/inventory');
+}
+
+export async function updateItem(id: string, prevState: ItemState, formData: FormData) {
+  const validatedFields = UpdateItem.safeParse({
+    name: formData.get('name'),
+    supplier_type: formData.get('supplier_type'),
+    supplier_id: formData.get('supplier_id'),
+    quantity: formData.get('quantity'),
+    uom: formData.get('uom'),
+    price: formData.get('price'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Item.',
+    };
+  }
+
+  const { name, supplier_type, supplier_id, quantity, uom, price } = validatedFields.data;
+  const priceInCents = Math.round(Number(price) * 100);
+
+  try {
+    await client.models.Item.update({
+      id: id,
+      name: name,
+      supplier_type: supplier_type,
+      supplier_id: supplier_id,
+      quantity: quantity,
+      uom: uom,
+      price: priceInCents,
+    });
+  } catch (error) {
+    return { message: 'Database Error: Failed to Update Item.' };
+  }
+
+  revalidatePath('/dashboard/production/inventory');
+  redirect('/dashboard/production/inventory');
+}
+
+export async function deleteItem(id: string) {
+  try {
+    await client.models.Item.delete({ id });
+    revalidatePath('/dashboard/production/inventory');
+    return { message: 'Deleted Item.' };
+  } catch (error) {
+    return { message: 'Database Error: Failed to Delete Item.' };
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // const FormSchema = z.object({
 //   id: z.string(),
 //   customerId: z.string({
@@ -521,4 +661,3 @@ export async function deleteAppleVariety(id: string) {
     return { message: 'Database Error: Failed to Delete Apple Variety.' };
   }
 }
-

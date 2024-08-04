@@ -93,6 +93,27 @@ export type Supplier = {
   type: string[];
 };
 
+
+export type Item = {
+  id: string;
+  name: string;
+  supplier_type: string;
+  supplier_id: string;
+  quantity: number;
+  uom: string;
+  price: number;
+};
+
+export type FormattedItemsTable = {
+  id: string;
+  name: string;
+  supplier_type: string;
+  supplier_id: string;
+  quantity: number;
+  uom: string;
+  price: number;
+};
+
 export type SupplierAppleVariety = {
   id: string;
   supplier_id: string;

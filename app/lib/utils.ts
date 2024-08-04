@@ -91,3 +91,4 @@ export const getLatestUniqueMonthlyRevenue = (revenue: Revenue[]): Revenue[] => 
   // Return the latest 12 unique monthly revenues
   return sortedUniqueMonthlyRevenue.slice(0, 12);
 };
+

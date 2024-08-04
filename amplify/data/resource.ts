@@ -43,6 +43,17 @@ const schema = a.schema({
       type: a.string().array().required(),
     }).authorization((allow) => [allow.publicApiKey()]),
 
+
+    Item: a.model({
+      id: a.id(),
+      name: a.string().required(),
+      supplier_type: a.string(),
+      supplier_id: a.id(),
+      quantity: a.integer().required(),
+      uom: a.string().required(), // Unit of Measurement
+      price: a.float(),
+    }).authorization((allow) => [allow.publicApiKey()]),
+
     
     SupplierAppleVariety: a.model({
       id: a.id().required(),
