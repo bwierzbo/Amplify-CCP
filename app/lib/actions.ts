@@ -315,7 +315,6 @@ export async function createSupplier(prevState: SupplierState, formData: FormDat
       type => formData.get(`type_${type}`) === 'on'
     ),
   });
-  console.log('Validated fields:', validatedFields.data);
 
   if (!validatedFields.success) {
     console.log('Validation failed:', validatedFields.error.flatten().fieldErrors);
@@ -335,7 +334,6 @@ export async function createSupplier(prevState: SupplierState, formData: FormDat
        address: address,
        type: type,
        });
-    console.log('Supplier created successfully');
   } catch (error) {
     console.error('Database Error:', error);
     return { message: 'Database Error: Failed to Create Supplier.' };
@@ -452,7 +450,7 @@ export async function createItem(prevState: ItemState, formData: FormData) {
   const priceInCents = Math.round(Number(price) * 100);
 
   try {
-    await client.models.Item.create({
+    const newItem = await client.models.Item.create({
       name,
       supplier_type,
       supplier_id,
@@ -460,6 +458,17 @@ export async function createItem(prevState: ItemState, formData: FormData) {
       uom,
       price: priceInCents,
     });
+
+    if (supplier_type === 'apples' && newItem.data && newItem.data.id) {
+      await client.models.AppleItemDetails.create({
+        item_id: newItem.data.id,
+        organic_grown: formData.get('organicGrown') === 'true',
+        pesticides_used: formData.get('pesticidesUsed') === 'true',
+        pesticide_type: formData.get('pesticideType') as string,
+        last_pesticide_date: formData.get('lastPesticideDate') as string,
+        animals_in_orchard: formData.get('animalsInOrchard') === 'true',
+      });
+    }
   } catch (error) {
     return {
       message: 'Database Error: Failed to Create Item.',
@@ -500,6 +509,29 @@ export async function updateItem(id: string, prevState: ItemState, formData: For
       uom: uom,
       price: priceInCents,
     });
+
+    if (supplier_type === 'apples') {
+      const appleDetails = await client.models.AppleItemDetails.get({ id });
+      if (appleDetails.data) {
+        await client.models.AppleItemDetails.update({
+          id: appleDetails.data.id,
+          organic_grown: formData.get('organicGrown') === 'true',
+          pesticides_used: formData.get('pesticidesUsed') === 'true',
+          pesticide_type: formData.get('pesticideType') as string,
+          last_pesticide_date: formData.get('lastPesticideDate') as string,
+          animals_in_orchard: formData.get('animalsInOrchard') === 'true',
+        });
+      } else {
+        await client.models.AppleItemDetails.create({
+          item_id: id,
+          organic_grown: formData.get('organicGrown') === 'true',
+          pesticides_used: formData.get('pesticidesUsed') === 'true',
+          pesticide_type: formData.get('pesticideType') as string,
+          last_pesticide_date: formData.get('lastPesticideDate') as string,
+          animals_in_orchard: formData.get('animalsInOrchard') === 'true',
+        });
+      }
+    }
   } catch (error) {
     return { message: 'Database Error: Failed to Update Item.' };
   }

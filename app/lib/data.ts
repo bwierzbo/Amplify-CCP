@@ -634,8 +634,13 @@ export async function fetchItemById(id: string): Promise<Item> {
           last_pesticide_date: appleDetailsData.last_pesticide_date ?? undefined,
           animals_in_orchard: appleDetailsData.animals_in_orchard ?? undefined,
         };
+        console.log('Fetched apple details:', appleDetailsData);
       }
     }
+
+    console.log('Fetched item data:', itemData);
+    console.log('Item supplier type:', item.supplier_type);
+    console.log('Final item object:', item);
 
     return item;
   } catch (error) {

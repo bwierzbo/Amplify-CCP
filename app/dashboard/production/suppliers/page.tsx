@@ -22,10 +22,8 @@ export default async function Page({
 
   try {
     const totalPages = await fetchSuppliersPages(query);
-    console.log('Total pages:', totalPages);
 
     const suppliers = await fetchFilteredSuppliers(query, currentPage);
-    console.log('Fetched suppliers:', suppliers);
 
     if (suppliers.length === 0) {
       console.log('No suppliers found');

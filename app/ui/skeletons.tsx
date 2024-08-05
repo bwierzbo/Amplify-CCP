@@ -408,13 +408,16 @@ export function ItemsTableSkeleton() {
                   Item Name
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Description
-                </th>
-                <th scope="col" className="px-3 py-5 font-medium">
-                  Price
+                  Suppplier Type
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Quantity
+                </th>
+                <th scope="col" className="px-3 py-5 font-medium">
+                  UOM
+                </th>
+                <th scope="col" className="px-3 py-5 font-medium">
+                  Price
                 </th>
                 <th
                   scope="col"

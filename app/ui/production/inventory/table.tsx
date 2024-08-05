@@ -6,6 +6,7 @@ import { formatCurrency } from '@/app/lib/utils';
 import { SunIcon, BeakerIcon, ArchiveBoxIcon, EllipsisHorizontalCircleIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import { use } from 'react';
+import { Item } from '@/app/lib/definitions';
 
 const typeIcons = {
   apples: SunIcon,
