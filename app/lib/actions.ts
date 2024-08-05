@@ -268,14 +268,6 @@ export async function deleteCustomer(id: string) {
 
 
 
-
-
-
-
-
-
-
-
 // SUPPLIER ACTIONS
 
 const SupplierFormSchema = z.object({
@@ -314,7 +306,6 @@ export type SupplierState = {
 
 
 export async function createSupplier(prevState: SupplierState, formData: FormData) {
-
   const validatedFields = CreateSupplier.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
@@ -324,6 +315,7 @@ export async function createSupplier(prevState: SupplierState, formData: FormDat
       type => formData.get(`type_${type}`) === 'on'
     ),
   });
+  console.log('Validated fields:', validatedFields.data);
 
   if (!validatedFields.success) {
     console.log('Validation failed:', validatedFields.error.flatten().fieldErrors);
@@ -343,6 +335,7 @@ export async function createSupplier(prevState: SupplierState, formData: FormDat
        address: address,
        type: type,
        });
+    console.log('Supplier created successfully');
   } catch (error) {
     console.error('Database Error:', error);
     return { message: 'Database Error: Failed to Create Supplier.' };

@@ -102,6 +102,13 @@ export type Item = {
   quantity: number;
   uom: string;
   price: number;
+  appleDetails?: {
+    organic_grown: boolean;
+    pesticides_used: boolean;
+    pesticide_type?: string;
+    last_pesticide_date?: string;
+    animals_in_orchard: boolean;
+  };
 };
 
 export type FormattedItemsTable = {

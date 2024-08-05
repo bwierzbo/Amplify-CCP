@@ -37,10 +37,26 @@ export default function EditItemForm({ item, suppliers }: { item: Item; supplier
   const initialState: ItemState = { message: null, errors: {} };
   const [state, setState] = useState<ItemState>(initialState);
   const [selectedSupplierType, setSelectedSupplierType] = useState(item.supplier_type);
+  const [isAppleType, setIsAppleType] = useState(item.supplier_type === 'apples');
+  const [organicGrown, setOrganicGrown] = useState(item.appleDetails?.organic_grown || false);
+  const [pesticidesUsed, setPesticidesUsed] = useState(item.appleDetails?.pesticides_used || false);
+  const [pesticideType, setPesticideType] = useState(item.appleDetails?.pesticide_type || '');
+  const [lastPesticideDate, setLastPesticideDate] = useState(item.appleDetails?.last_pesticide_date || '');
+  const [animalsInOrchard, setAnimalsInOrchard] = useState(item.appleDetails?.animals_in_orchard || false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+
+    if (isAppleType) {
+      formData.append('organicGrown', organicGrown.toString());
+      formData.append('pesticidesUsed', pesticidesUsed.toString());
+      if (pesticidesUsed) {
+        formData.append('pesticideType', pesticideType);
+        formData.append('lastPesticideDate', lastPesticideDate);
+      }
+      formData.append('animalsInOrchard', animalsInOrchard.toString());
+    }
 
     const result = await updateItem(item.id, state, formData);
     if (result?.errors) {
@@ -51,7 +67,9 @@ export default function EditItemForm({ item, suppliers }: { item: Item; supplier
   };
 
   const handleSupplierTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedSupplierType(event.target.value);
+    const selectedType = event.target.value;
+    setSelectedSupplierType(selectedType);
+    setIsAppleType(selectedType === 'apples');
   };
 
   return (
@@ -213,7 +231,7 @@ export default function EditItemForm({ item, suppliers }: { item: Item; supplier
                 name="price"
                 type="number"
                 step="0.01"
-                defaultValue={item.price}
+                defaultValue={(item.price / 100).toFixed(2)}
                 placeholder="Enter price"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                 aria-describedby="price-error"
@@ -230,6 +248,75 @@ export default function EditItemForm({ item, suppliers }: { item: Item; supplier
               ))}
           </div>
         </div>
+
+        {isAppleType && (
+          <div className="mb-4">
+            <h3 className="mb-2 block text-sm font-medium">Apple-specific Information</h3>
+            
+            <div className="flex items-center mb-2">
+              <input
+                type="checkbox"
+                id="organicGrown"
+                checked={organicGrown}
+                onChange={(e) => setOrganicGrown(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="organicGrown">Grown Organically</label>
+            </div>
+
+            <div className="flex items-center mb-2">
+              <input
+                type="checkbox"
+                id="pesticidesUsed"
+                checked={pesticidesUsed}
+                onChange={(e) => setPesticidesUsed(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="pesticidesUsed">Pesticides Used</label>
+            </div>
+
+            {pesticidesUsed && (
+              <>
+                <div className="mb-2">
+                  <label htmlFor="pesticideType" className="block text-sm font-medium">
+                    Type of Pesticide
+                  </label>
+                  <input
+                    type="text"
+                    id="pesticideType"
+                    value={pesticideType}
+                    onChange={(e) => setPesticideType(e.target.value)}
+                    className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  />
+                </div>
+
+                <div className="mb-2">
+                  <label htmlFor="lastPesticideDate" className="block text-sm font-medium">
+                    Date Pesticide Last Used
+                  </label>
+                  <input
+                    type="date"
+                    id="lastPesticideDate"
+                    value={lastPesticideDate}
+                    onChange={(e) => setLastPesticideDate(e.target.value)}
+                    className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="animalsInOrchard"
+                checked={animalsInOrchard}
+                onChange={(e) => setAnimalsInOrchard(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="animalsInOrchard">Animals in Orchard</label>
+            </div>
+          </div>
+        )}
 
         <div aria-live="polite" aria-atomic="true">
           {state.message ? (

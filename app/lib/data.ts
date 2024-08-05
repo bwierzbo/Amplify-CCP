@@ -621,6 +621,22 @@ export async function fetchItemById(id: string): Promise<Item> {
       price: itemData.price || 0,
     };
 
+    if (item.supplier_type === 'apples') {
+      const appleDetailsResponse = await client.models.AppleItemDetails.get({ item_id: id });
+      const appleDetailsData = appleDetailsResponse.data;
+      const appleDetailsErrors = appleDetailsResponse.errors;
+
+      if (!appleDetailsErrors && appleDetailsData) {
+        item.appleDetails = {
+          organic_grown: appleDetailsData.organic_grown,
+          pesticides_used: appleDetailsData.pesticides_used,
+          pesticide_type: appleDetailsData.pesticide_type,
+          last_pesticide_date: appleDetailsData.last_pesticide_date,
+          animals_in_orchard: appleDetailsData.animals_in_orchard,
+        };
+      }
+    }
+
     return item;
   } catch (error) {
     console.error('Database Error:', error);

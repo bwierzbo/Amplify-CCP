@@ -18,6 +18,8 @@ import {
   ScaleIcon,
   Cog6ToothIcon,
   BookOpenIcon,
+  BanknotesIcon,
+  DocumentCurrencyDollarIcon,
 
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -62,6 +64,22 @@ const links: NavLinkType[] = [
     children: [
       { name: 'Customers', href: '/dashboard/sales/customers', icon: UserGroupIcon },
       { name: 'Invoices', href: '/dashboard/sales/invoices', icon: DocumentTextIcon },
+    ],
+  },
+  {
+    name: 'Reporting',
+    href: '/dashboard/reporting',
+    icon: DocumentTextIcon,
+    children: [
+      { name: 'Financial Reports', href: '/dashboard/reporting/financialreports', icon: BanknotesIcon },
+    ],
+  },
+  {
+    name: 'Accounting',
+    href: '/dashboard/accounting',
+    icon: DocumentCurrencyDollarIcon,
+    children: [
+      { name: 'Taxes', href: '/dashboard/accounting/taxes', icon: DocumentTextIcon },
     ],
   },
 ];

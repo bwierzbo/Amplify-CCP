@@ -38,8 +38,8 @@ const schema = a.schema({
       id: a.id(),
       name: a.string().required(),
       email: a.email().required(),
-      phone: a.phone(),
-      address: a.string(),
+      phone: a.phone().required(),
+      address: a.string().required(),
       type: a.string().array().required(),
     }).authorization((allow) => [allow.publicApiKey()]),
 
@@ -54,6 +54,15 @@ const schema = a.schema({
       price: a.float(),
     }).authorization((allow) => [allow.publicApiKey()]),
 
+    AppleItemDetails: a.model({
+      id: a.id(),
+      item_id: a.id().required(), // Foreign key to Item table
+      organic_grown: a.boolean().required(),
+      pesticides_used: a.boolean().required(),
+      pesticide_type: a.string(),
+      last_pesticide_date: a.date(),
+      animals_in_orchard: a.boolean().required(),
+    }).authorization((allow) => [allow.publicApiKey()]),
     
     SupplierAppleVariety: a.model({
       id: a.id().required(),
