@@ -147,7 +147,27 @@ export type Tree = {
   id: string;
   plotId: string;
   name: string;
-  yearPlanted: string;
+  variety: string;
   rootstock: string;
   scionwood: string;
+  yearPlanted: number;
+  row: number;
+  column: number;
+  status: 'healthy' | 'diseased' | 'treated' | 'removed' | null;
+  lastPruned: Date | null;
+  lastFertilized: Date | null;
+  lastPesticide: Date | null;
+  notes: string | null;
+  yield: number | null;
+  lastHarvestDate: Date | null;
+  appleVarietyId: string | null;
+  lat: number | null;
+  lng: number | null;
 };
+
+export type Plot = {
+  id: string;
+  name: string;
+  rows: number;
+  columns: number;
+}

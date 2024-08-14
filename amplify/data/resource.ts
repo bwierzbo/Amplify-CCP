@@ -80,7 +80,38 @@ const schema = a.schema({
     }).authorization((allow) => [allow.publicApiKey()]),
 
 
+    Plot: a.model({
+      id: a.id(),
+      name: a.string().required(),
+      rows: a.integer().required(),
+      columns: a.integer().required(),
+    }).authorization((allow) => [allow.publicApiKey()]),
 
+    Tree: a.model({
+      id: a.id(),
+      plotId: a.string().required(),
+      name: a.string().required(),
+      variety: a.string().required(),
+      rootstock: a.string().required(),
+      scionwood: a.string().required(),
+      yearPlanted: a.integer().required(),
+      row: a.integer().required(),
+      column: a.integer().required(),
+      status: a.enum(['healthy', 'diseased', 'treated', 'removed']),
+      lastPruned: a.date(),
+      lastFertilized: a.date(),
+      lastPesticide: a.date(),
+      notes: a.string(),
+      yield: a.float(),
+      lastHarvestDate: a.date(),
+      // References to other models
+      appleVarietyId: a.string(),
+      // Timestamps
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
+      lat: a.float(),
+      lng: a.float(),
+    }).authorization((allow) => [allow.publicApiKey()]),
     
 });
 

@@ -13,7 +13,11 @@ Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
 
-const FormSchema = z.object({
+
+
+// INVOICE ACTIONS
+
+const InvoiceFormSchema = z.object({
   id: z.string(),
   customerId: z.string({
     invalid_type_error: 'Please select a customer.',
@@ -27,11 +31,10 @@ const FormSchema = z.object({
   date: z.string(),
 });
 
-const CreateInvoice = FormSchema.omit({ id: true, date: true });
-const UpdateInvoice = FormSchema.omit({ date: true, id: true });
+const CreateInvoice = InvoiceFormSchema.omit({ id: true, date: true });
+const UpdateInvoice = InvoiceFormSchema.omit({ date: true, id: true });
 
-
-export type State = {
+export type InvoiceState = {
   errors?: {
     customerId?: string[];
     amount?: string[];
@@ -40,9 +43,7 @@ export type State = {
   message?: string | null;
 };
 
-// INVOICE ACTIONS
-
-export async function createInvoice(prevState: State, formData: FormData) {
+export async function createInvoice(prevState: InvoiceState, formData: FormData) {
   console.log('Creating invoice...');
   // Validate form fields using Zod
   const validatedFields = CreateInvoice.safeParse({
@@ -81,12 +82,12 @@ export async function createInvoice(prevState: State, formData: FormData) {
   console.log("created invoice")
   revalidatePath('/dashboard/sales/invoices');
   redirect('/dashboard/sales/invoices');
-}
+};
 
 export async function updateInvoice(
   
   id: string,
-  prevState: State,
+  prevState: InvoiceState,
   formData: FormData,
 )
  {
@@ -140,7 +141,7 @@ export async function updateInvoice(
     // Revalidate the cache for the invoices page and redirect the user.
     revalidatePath('/dashboard/sales/invoices');
     redirect('/dashboard/sales/invoices');
-  }
+};
 
 export async function deleteInvoice(id: string) {
   let redirectPath: string | null = null
@@ -160,7 +161,7 @@ export async function deleteInvoice(id: string) {
     // Revalidate the cache for the invoices page and redirect the user.
     revalidatePath('/dashboard/sales/invoices');
     redirect('/dashboard/sales/invoices');
-  }
+};
 
 // CUSTOMER ACTIONS
 
@@ -216,7 +217,7 @@ export async function createCustomer(prevState: CustomerState, formData: FormDat
 
   revalidatePath('/dashboard/sales/customers');
   redirect('/dashboard/sales/customers');
-}
+};
 
 export async function updateCustomer(id: string, prevState: CustomerState, formData: FormData) {
   console.log('Updating customer...');
@@ -251,7 +252,7 @@ export async function updateCustomer(id: string, prevState: CustomerState, formD
 
   revalidatePath('/dashboard/sales/customers');
   redirect('/dashboard/sales/customers');
-}
+};
 
 export async function deleteCustomer(id: string) {
   try {
@@ -264,7 +265,7 @@ export async function deleteCustomer(id: string) {
   }
 
   revalidatePath('/dashboard/sales/customers');
-}
+};
 
 
 
@@ -303,8 +304,6 @@ export type SupplierState = {
   message?: string | null;
 };
 
-
-
 export async function createSupplier(prevState: SupplierState, formData: FormData) {
   const validatedFields = CreateSupplier.safeParse({
     name: formData.get('name'),
@@ -340,9 +339,7 @@ export async function createSupplier(prevState: SupplierState, formData: FormDat
   }
   revalidatePath('/dashboard/production/suppliers');
   redirect('/dashboard/production/suppliers');
-}
-
-
+};
 
 export async function updateSupplier(
   id: string,
@@ -381,7 +378,7 @@ export async function updateSupplier(
 
   revalidatePath('/dashboard/production/suppliers');
   redirect('/dashboard/production/suppliers');
-}
+};
 
 export async function deleteSupplier(id: string) {
   try {
@@ -392,8 +389,9 @@ export async function deleteSupplier(id: string) {
   } catch (error) {
     return { message: 'Database Error: Failed to Delete Supplier.' };
   }
-}
+};
 
+// ITEM ACTIONS
 
 const ItemFormSchema = z.object({
   id: z.string(),
@@ -477,7 +475,7 @@ export async function createItem(prevState: ItemState, formData: FormData) {
 
   revalidatePath('/dashboard/production/inventory');
   redirect('/dashboard/production/inventory');
-}
+};
 
 export async function updateItem(id: string, prevState: ItemState, formData: FormData) {
   const validatedFields = UpdateItem.safeParse({
@@ -538,54 +536,32 @@ export async function updateItem(id: string, prevState: ItemState, formData: For
 
   revalidatePath('/dashboard/production/inventory');
   redirect('/dashboard/production/inventory');
-}
+};
 
 export async function deleteItem(id: string) {
   try {
+    // First, check if this is an apple item and delete its details if it exists
+    const item = await client.models.Item.get({ id });
+    if (item.data && item.data.supplier_type === 'apples') {
+      const appleDetails = await client.models.AppleItemDetails.get({ id });
+      if (appleDetails.data) {
+        await client.models.AppleItemDetails.delete({ id: appleDetails.data.id });
+      }
+    }
+
+    // Now delete the item itself
     await client.models.Item.delete({ id });
     revalidatePath('/dashboard/production/inventory');
     return { message: 'Deleted Item.' };
   } catch (error) {
+    console.error('Database Error:', error);
     return { message: 'Database Error: Failed to Delete Item.' };
   }
-}
+};
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const FormSchema = z.object({
-//   id: z.string(),
-//   customerId: z.string({
-//     invalid_type_error: 'Please select a customer.',
-//   }),
-//   amount: z.coerce
-//     .number()
-//     .gt(0, { message: 'Please enter an amount greater than $0.' }),
-//   status: z.enum(['pending', 'paid'], {
-//     invalid_type_error: 'Please select an invoice status.',
-//   }),
-//   date: z.string(),
-// });
-
-
-
-
-//apple actions
+//APPLE ACTIONS
 
 const AppleVarietySchema = z.object({
   id: z.string(),
@@ -612,7 +588,6 @@ export type AppleVarietyState = {
   message?: string | null;
 };
 
-// Apple Actions
 
 export async function createAppleVariety(prevState: AppleVarietyState, formData: FormData) {
   const validatedFields = CreateAppleVariety.safeParse({
@@ -644,7 +619,7 @@ export async function createAppleVariety(prevState: AppleVarietyState, formData:
 
   revalidatePath('/dashboard/apple-varieties');
   redirect('/dashboard/apple-varieties');
-}
+};
 
 export async function updateAppleVariety(id: string, prevState: AppleVarietyState, formData: FormData) {
   const validatedFields = UpdateAppleVariety.safeParse({
@@ -675,7 +650,7 @@ export async function updateAppleVariety(id: string, prevState: AppleVarietyStat
 
   revalidatePath('/dashboard/apple-varieties');
   redirect('/dashboard/apple-varieties');
-}
+};
 
 export async function deleteAppleVariety(id: string) {
   try {
@@ -685,4 +660,4 @@ export async function deleteAppleVariety(id: string) {
   } catch (error) {
     return { message: 'Database Error: Failed to Delete Apple Variety.' };
   }
-}
+};

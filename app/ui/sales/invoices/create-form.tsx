@@ -10,10 +10,10 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
-import { createInvoice, State } from '@/app/lib/actions';
+import { createInvoice, InvoiceState } from '@/app/lib/actions';
 
 export default function Form({ customers }: { customers: CustomerField[] }) {
-  const [state, setState] = useState<State>({ message: null, errors: {} });
+  const [state, setState] = useState<InvoiceState>({ message: null, errors: {} });
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

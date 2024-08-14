@@ -11,6 +11,7 @@ import {
   Supplier,
   Item,
   FormattedItemsTable,
+  Plot,
 } from './definitions';
 import { formatCurrency } from './utils';
 import { generateClient } from 'aws-amplify/data';
@@ -729,3 +730,160 @@ export async function fetchAppleVarieties(): Promise<AppleVarieties[]> {
   }
 }
 
+export async function fetchTrees(): Promise<Tree[]> {
+  try {
+    const { data, errors } = await client.models.Tree.list();
+    if (errors) {
+      console.error('Error fetching trees:', errors);
+      throw new Error('Error fetching tree data.');
+    }
+    
+    // If no trees are returned from the database, return sample data
+        // If no trees are returned from the database, return sample data
+        if (data.length === 0) {
+          return [
+            {
+              id: '1',
+              plotId: 'plot1',
+              name: 'Sample Tree 1',
+              variety: 'Gala',
+              rootstock: 'M9',
+              scionwood: 'Gala',
+              yearPlanted: 2020,
+              row: 1,
+              column: 1,
+              status: 'healthy',
+              lastPruned: null,
+              lastFertilized: null,
+              lastPesticide: null,
+              notes: null,
+              yield: null,
+              lastHarvestDate: null,
+              appleVarietyId: null,
+              lat: 48.11333333,
+              lng: -123.25305556,
+            },
+            {
+              id: '2',
+              plotId: 'plot1',
+              name: 'Sample Tree 2',
+              variety: 'Fuji',
+              rootstock: 'M26',
+              scionwood: 'Fuji',
+              yearPlanted: 2021,
+              row: 1,
+              column: 2,
+              status: 'healthy',
+              lastPruned: null,
+              lastFertilized: null,
+              lastPesticide: null,
+              notes: null,
+              yield: null,
+              lastHarvestDate: null,
+              appleVarietyId: null,
+              lat: 48.11343333, 
+              lng: -123.25315556,
+            },
+          ];
+        }
+    
+    return data.map(tree => ({
+      id: tree.id ?? '',
+      plotId: tree.plotId,
+      name: tree.name,
+      variety: tree.variety,
+      rootstock: tree.rootstock,
+      scionwood: tree.scionwood,
+      yearPlanted: tree.yearPlanted,
+      row: tree.row,
+      column: tree.column,
+      status: tree.status as 'healthy' | 'diseased' | 'treated' | 'removed' | null,
+      lastPruned: tree.lastPruned ? new Date(tree.lastPruned) : null,
+      lastFertilized: tree.lastFertilized ? new Date(tree.lastFertilized) : null,
+      lastPesticide: tree.lastPesticide ? new Date(tree.lastPesticide) : null,
+      notes: tree.notes ?? null,
+      yield: tree.yield ?? null,
+      lastHarvestDate: tree.lastHarvestDate ? new Date(tree.lastHarvestDate) : null,
+      appleVarietyId: tree.appleVarietyId ?? null,
+      lat: tree.lat ?? null,
+      lng: tree.lng ?? null,
+    }));
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch tree data.');
+  }
+}
+export async function fetchPlots(): Promise<Plot[]> {
+  try {
+    const { data, errors } = await client.models.Plot.list();
+    if (errors) {
+      console.error('Error fetching plots:', errors);
+      throw new Error('Error fetching plot data.');
+    }
+    return data.map(plot => ({
+      id: plot.id ?? '',
+      name: plot.name,
+      rows: plot.rows,
+      columns: plot.columns,
+    }));
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch plot data.');
+  }
+}
+
+export async function fetchPlotById(id: string): Promise<Plot | null> {
+  try {
+    const { data, errors } = await client.models.Plot.get({ id });
+    if (errors) {
+      console.error('Error fetching plot:', errors);
+      throw new Error('Error fetching plot data.');
+    }
+    if (!data) return null;
+    return {
+      id: data.id ?? '',
+      name: data.name,
+      rows: data.rows,
+      columns: data.columns,
+    };
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch plot data.');
+  }
+}
+
+export async function fetchTreesByPlotId(plotId: string): Promise<Tree[]> {
+  try {
+    const { data, errors } = await client.models.Tree.list({
+      filter: { plotId: { eq: plotId } }
+    });
+    if (errors) {
+      console.error('Error fetching trees:', errors);
+      throw new Error('Error fetching tree data.');
+    }
+    return data.map(tree => ({
+      id: tree.id ?? '',
+      plotId: tree.plotId,
+      name: tree.name,
+      variety: tree.variety,
+      rootstock: tree.rootstock,
+      scionwood: tree.scionwood,
+      yearPlanted: tree.yearPlanted,
+      row: tree.row,
+      column: tree.column,
+      status: tree.status as 'healthy' | 'diseased' | 'treated' | 'removed' | null,
+      lastPruned: tree.lastPruned ? new Date(tree.lastPruned) : null,
+      lastFertilized: tree.lastFertilized ? new Date(tree.lastFertilized) : null,
+      lastPesticide: tree.lastPesticide ? new Date(tree.lastPesticide) : null,
+      notes: tree.notes ?? null,
+      yield: tree.yield ?? null,
+      lastHarvestDate: tree.lastHarvestDate ? new Date(tree.lastHarvestDate) : null,
+      appleVarietyId: tree.appleVarietyId ?? null,
+      lat: tree.lat ?? null,
+      lng: tree.lng ?? null,
+    }));
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch tree data.');
+  }
+}

@@ -36,12 +36,11 @@ type NavLinkType = {
 const links: NavLinkType[] = [
   { name: 'Home', href: '/dashboard', icon: HomeIcon },
   {
-    name: 'Orchard Management',
+    name: 'Orchard',
     href: '/dashboard/orchardmanagement',
     icon: CogIcon,
     children: [
       { name: 'Apple Varieties', href: '/dashboard/orchardmanagement/applevarieties', icon: SunIcon },
-      { name: 'Tree Management', href: '/dashboard/orchardmanagement/treemanagement', icon: BeakerIcon },
       { name: 'Havest Management', href: '/dashboard/orchardmanagement/harvestmanagement', icon: ClipboardDocumentIcon},
       { name: 'Maintenance', href: '/dashboard/orchardmanagement/maintenance', icon: WrenchIcon},
     ],
