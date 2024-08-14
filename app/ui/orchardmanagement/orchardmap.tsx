@@ -81,7 +81,7 @@ export default function OrchardMap({ satelliteImageUrl }: OrchardMapProps) {
         </TransformComponent>
       </TransformWrapper>
       {selectedTree && (
-        <div className="absolute bottom-8 left-8 bg-white p-6 rounded-lg shadow-lg z-10" style={{ minWidth: '300px', maxWidth: '400px' }}>
+        <div className="absolute bottom-8 left-80 bg-white p-6 rounded-lg shadow-lg z-10" style={{ minWidth: '300px', maxWidth: '400px' }}>
           <h3 className="text-xl font-bold mb-4">{selectedTree.name}</h3>
           <div className="grid grid-cols-2 gap-4">
             <p><span className="font-semibold">Variety:</span> {selectedTree.variety}</p>
