@@ -1,34 +1,29 @@
 import Form from '@/app/ui/sales/customers/edit-form';
 import Breadcrumbs from '@/app/ui/sales/invoices/breadcrumbs';
-import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
+import { fetchCustomerById } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 
-
-
- 
 export default async function Page({ params }: { params: { id: string } }) {
-    const id = params.id;
-    const [invoice, customers] = await Promise.all([
-        fetchInvoiceById(id),
-        fetchCustomers(),
-      ]);
+  const id = params.id;
+  const customer = await fetchCustomerById(id);
 
-      if (!invoice) {
-        notFound();
-      }
+  if (!customer) {
+    notFound();
+  }
+
   return (
     <main>
       <Breadcrumbs
         breadcrumbs={[
-          { label: 'Invoices', href: '/dashboard/invoices' },
+          { label: 'Customers', href: '/dashboard/sales/customers' },
           {
-            label: 'Edit Invoice',
-            href: `/dashboard/invoices/${id}/edit`,
+            label: 'Edit Customer',
+            href: `/dashboard/sales/customers/${id}/edit`,
             active: true,
           },
         ]}
       />
-      <Form invoice={invoice} customers={customers} />
+      <Form customer={customer} />
     </main>
   );
 }

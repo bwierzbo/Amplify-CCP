@@ -285,6 +285,7 @@ export async function fetchCustomers(): Promise<CustomerField[]> {
       .map(customer => ({
         id: customer.id as string,
         name: customer.name,
+        email: customer.email,
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -360,6 +361,31 @@ export async function fetchFilteredCustomers(query: string, currentPage: number)
   }
 }
 
+export async function fetchCustomerById(id: string): Promise<CustomerField | undefined> {
+  try {
+    const customerResponse = await client.models.Customer.get({ id });
+    const customerData = customerResponse.data;
+    const customerErrors = customerResponse.errors;
+
+    if (customerErrors) {
+      console.error('Error fetching customer:', customerErrors);
+      throw new Error('Error fetching customer data.');
+    }
+
+    if (!customerData) {
+      return undefined;
+    }
+
+    return {
+      id: customerData.id ?? '',
+      name: customerData.name ?? '',
+      email: customerData.email ?? '',
+    };
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch customer.');
+  }
+}
 
 //Supplier functions
 

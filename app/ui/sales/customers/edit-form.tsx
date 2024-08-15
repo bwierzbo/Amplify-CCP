@@ -84,7 +84,7 @@ export default function EditCustomerForm({
                 <p className="mt-2 text-sm text-red-500" key={error}>
                   {error}
                 </p>
-              ))}
+              ))} 
           </div>
         </div>
 
