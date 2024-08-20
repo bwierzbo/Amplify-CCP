@@ -89,8 +89,6 @@ const schema = a.schema({
 
     Tree: a.model({
       id: a.id(),
-      plotId: a.string().required(),
-      name: a.string().required(),
       variety: a.string().required(),
       rootstock: a.string().required(),
       scionwood: a.string().required(),
@@ -104,13 +102,9 @@ const schema = a.schema({
       notes: a.string(),
       yield: a.float(),
       lastHarvestDate: a.date(),
-      // References to other models
-      appleVarietyId: a.string(),
       // Timestamps
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
-      lat: a.float(),
-      lng: a.float(),
     }).authorization((allow) => [allow.publicApiKey()]),
     
 });

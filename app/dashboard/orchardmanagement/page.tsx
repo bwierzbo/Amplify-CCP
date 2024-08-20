@@ -11,9 +11,18 @@ export default async function Page() {
   const trees = await fetchTrees();
   const satelliteImageUrl = '/aerialImage.png'; // Replace with your actual image path
 
+  if (!trees || trees.length === 0) {
+    return <div>Loading trees data...</div>;
+  }
+
+  // Log all trees to the console
+  console.log('All trees:', JSON.stringify(trees, null, 2));
+
+
+
   return (
     <div className="w-full h-screen">
-      <OrchardMap satelliteImageUrl={satelliteImageUrl} />
+      <OrchardMap satelliteImageUrl={satelliteImageUrl} trees={trees} />
     </div>
   );
 }

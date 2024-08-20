@@ -770,9 +770,7 @@ export async function fetchTrees(): Promise<Tree[]> {
           return [
             {
               id: '1',
-              plotId: 'plot1',
-              name: 'Sample Tree 1',
-              variety: 'Gala',
+              variety: 'Cox Orange Pippin',
               rootstock: 'M9',
               scionwood: 'Gala',
               yearPlanted: 2020,
@@ -785,15 +783,11 @@ export async function fetchTrees(): Promise<Tree[]> {
               notes: null,
               yield: null,
               lastHarvestDate: null,
-              appleVarietyId: null,
-              lat: 48.11333333,
-              lng: -123.25305556,
+
             },
             {
               id: '2',
-              plotId: 'plot1',
-              name: 'Sample Tree 2',
-              variety: 'Fuji',
+              variety: 'Northern Spy',
               rootstock: 'M26',
               scionwood: 'Fuji',
               yearPlanted: 2021,
@@ -806,17 +800,13 @@ export async function fetchTrees(): Promise<Tree[]> {
               notes: null,
               yield: null,
               lastHarvestDate: null,
-              appleVarietyId: null,
-              lat: 48.11343333, 
-              lng: -123.25315556,
+
             },
           ];
         }
     
     return data.map(tree => ({
       id: tree.id ?? '',
-      plotId: tree.plotId,
-      name: tree.name,
       variety: tree.variety,
       rootstock: tree.rootstock,
       scionwood: tree.scionwood,
@@ -830,67 +820,63 @@ export async function fetchTrees(): Promise<Tree[]> {
       notes: tree.notes ?? null,
       yield: tree.yield ?? null,
       lastHarvestDate: tree.lastHarvestDate ? new Date(tree.lastHarvestDate) : null,
-      appleVarietyId: tree.appleVarietyId ?? null,
-      lat: tree.lat ?? null,
-      lng: tree.lng ?? null,
+
     }));
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch tree data.');
   }
 }
-export async function fetchPlots(): Promise<Plot[]> {
-  try {
-    const { data, errors } = await client.models.Plot.list();
-    if (errors) {
-      console.error('Error fetching plots:', errors);
-      throw new Error('Error fetching plot data.');
-    }
-    return data.map(plot => ({
-      id: plot.id ?? '',
-      name: plot.name,
-      rows: plot.rows,
-      columns: plot.columns,
-    }));
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch plot data.');
-  }
-}
 
-export async function fetchPlotById(id: string): Promise<Plot | null> {
+
+export async function fetchTreeById(id: string): Promise<Tree | null> {
   try {
-    const { data, errors } = await client.models.Plot.get({ id });
+    const { data, errors } = await client.models.Tree.get({ id });
     if (errors) {
-      console.error('Error fetching plot:', errors);
-      throw new Error('Error fetching plot data.');
+      console.error('Error fetching tree:', errors);
+      throw new Error('Error fetching tree data.');
     }
     if (!data) return null;
+
     return {
       id: data.id ?? '',
-      name: data.name,
-      rows: data.rows,
-      columns: data.columns,
+      variety: data.variety,
+      rootstock: data.rootstock,
+      scionwood: data.scionwood,
+      yearPlanted: data.yearPlanted,
+      row: data.row,
+      column: data.column,
+      status: data.status as 'healthy' | 'diseased' | 'treated' | 'removed' | null,
+      lastPruned: data.lastPruned ? new Date(data.lastPruned) : null,
+      lastFertilized: data.lastFertilized ? new Date(data.lastFertilized) : null,
+      lastPesticide: data.lastPesticide ? new Date(data.lastPesticide) : null,
+      notes: data.notes ?? null,
+      yield: data.yield ?? null,
+      lastHarvestDate: data.lastHarvestDate ? new Date(data.lastHarvestDate) : null,
     };
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to fetch plot data.');
+    throw new Error('Failed to fetch tree data.');
   }
 }
 
-export async function fetchTreesByPlotId(plotId: string): Promise<Tree[]> {
+export async function fetchTreeByRowAndColumn(row: number, column: number): Promise<Tree | null> {
   try {
     const { data, errors } = await client.models.Tree.list({
-      filter: { plotId: { eq: plotId } }
+      filter: {
+        row: { eq: row },
+        column: { eq: column }
+      }
     });
     if (errors) {
-      console.error('Error fetching trees:', errors);
+      console.error('Error fetching tree:', errors);
       throw new Error('Error fetching tree data.');
     }
-    return data.map(tree => ({
+    if (!data || data.length === 0) return null;
+
+    const tree = data[0];
+    return {
       id: tree.id ?? '',
-      plotId: tree.plotId,
-      name: tree.name,
       variety: tree.variety,
       rootstock: tree.rootstock,
       scionwood: tree.scionwood,
@@ -904,10 +890,7 @@ export async function fetchTreesByPlotId(plotId: string): Promise<Tree[]> {
       notes: tree.notes ?? null,
       yield: tree.yield ?? null,
       lastHarvestDate: tree.lastHarvestDate ? new Date(tree.lastHarvestDate) : null,
-      appleVarietyId: tree.appleVarietyId ?? null,
-      lat: tree.lat ?? null,
-      lng: tree.lng ?? null,
-    }));
+    };
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch tree data.');

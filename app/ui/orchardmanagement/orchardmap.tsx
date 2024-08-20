@@ -7,46 +7,15 @@ import Image from 'next/image';
 
 interface OrchardMapProps {
   satelliteImageUrl: string;
+  trees: Tree[];
 }
 
-export default function OrchardMap({ satelliteImageUrl }: OrchardMapProps) {
+export default function OrchardMap({ satelliteImageUrl, trees }: OrchardMapProps) {
   const [selectedTree, setSelectedTree] = useState<Tree | null>(null);
 
   const handleTreeClick = (tree: Tree) => {
     setSelectedTree(tree);
   };
-
-  const generateTrees = () => {
-    const trees: Tree[] = [];
-    for (let row = 0; row < 32; row++) {
-      for (let col = 0; col < 15; col++) {
-        trees.push({
-          id: `tree-${row}-${col}`,
-          plotId: 'plot1',
-          name: `Tree ${row}-${col}`,
-          variety: 'Unknown',
-          rootstock: 'Unknown',
-          scionwood: 'Unknown',
-          yearPlanted: 2023,
-          row: row,
-          column: col,
-          status: 'healthy',
-          lastPruned: null,
-          lastFertilized: null,
-          lastPesticide: null,
-          notes: null,
-          yield: null,
-          lastHarvestDate: null,
-          appleVarietyId: null,
-          lat: null,
-          lng: null,
-        });
-      }
-    }
-    return trees;
-  };
-
-  const trees = generateTrees();
 
   return (
     <div className="w-full h-screen overflow-hidden flex justify-center">
@@ -82,9 +51,8 @@ export default function OrchardMap({ satelliteImageUrl }: OrchardMapProps) {
       </TransformWrapper>
       {selectedTree && (
         <div className="absolute bottom-8 left-80 bg-white p-6 rounded-lg shadow-lg z-10" style={{ minWidth: '300px', maxWidth: '400px' }}>
-          <h3 className="text-xl font-bold mb-4">{selectedTree.name}</h3>
+          <h3 className="text-xl font-bold mb-4">{selectedTree.variety}</h3>
           <div className="grid grid-cols-2 gap-4">
-            <p><span className="font-semibold">Variety:</span> {selectedTree.variety}</p>
             <p><span className="font-semibold">Status:</span> {selectedTree.status}</p>
             <p><span className="font-semibold">Year Planted:</span> {selectedTree.yearPlanted}</p>
             <p><span className="font-semibold">Rootstock:</span> {selectedTree.rootstock}</p>

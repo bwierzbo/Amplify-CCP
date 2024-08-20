@@ -146,8 +146,6 @@ export type OrchardPlot = {
 
 export type Tree = {
   id: string;
-  plotId: string;
-  name: string;
   variety: string;
   rootstock: string;
   scionwood: string;
@@ -161,9 +159,6 @@ export type Tree = {
   notes: string | null;
   yield: number | null;
   lastHarvestDate: Date | null;
-  appleVarietyId: string | null;
-  lat: number | null;
-  lng: number | null;
 };
 
 export type Plot = {
