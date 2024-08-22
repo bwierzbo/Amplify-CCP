@@ -91,7 +91,6 @@ const schema = a.schema({
       id: a.id(),
       variety: a.string().required(),
       rootstock: a.string().required(),
-      scionwood: a.string().required(),
       yearPlanted: a.integer().required(),
       row: a.integer().required(),
       column: a.integer().required(),

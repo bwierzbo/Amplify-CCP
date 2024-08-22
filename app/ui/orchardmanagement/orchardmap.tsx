@@ -116,7 +116,6 @@ export default function OrchardMap({ satelliteImageUrl, trees }: OrchardMapProps
             </p>
             <p><span className="font-semibold">Year Planted:</span> {selectedTree.yearPlanted}</p>
             <p><span className="font-semibold">Rootstock:</span> {selectedTree.rootstock}</p>
-            <p><span className="font-semibold">Scionwood:</span> {selectedTree.scionwood}</p>
             <p><span className="font-semibold">Last Pruned:</span> {selectedTree.lastPruned ? new Date(selectedTree.lastPruned).toLocaleDateString() : 'N/A'}</p>
             <p><span className="font-semibold">Last Fertilized:</span> {selectedTree.lastFertilized ? new Date(selectedTree.lastFertilized).toLocaleDateString() : 'N/A'}</p>
             <p><span className="font-semibold">Last Pesticide:</span> {selectedTree.lastPesticide ? new Date(selectedTree.lastPesticide).toLocaleDateString() : 'N/A'}</p>

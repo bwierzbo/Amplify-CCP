@@ -148,7 +148,6 @@ export type Tree = {
   id: string;
   variety: string;
   rootstock: string;
-  scionwood: string;
   yearPlanted: number;
   row: number;
   column: number;
