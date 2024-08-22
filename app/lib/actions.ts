@@ -661,3 +661,16 @@ export async function deleteAppleVariety(id: string) {
     return { message: 'Database Error: Failed to Delete Apple Variety.' };
   }
 };
+
+export async function updateTreeStatus(id: string, status: 'healthy' | 'diseased' | 'treated' | 'removed') {
+  try {
+    await client.models.Tree.update({
+      id: id,
+      status: status,
+    });
+    return { message: 'Tree status updated successfully.' };
+  } catch (error) {
+    console.error('Database Error:', error);
+    return { message: 'Database Error: Failed to update tree status.' };
+  }
+}

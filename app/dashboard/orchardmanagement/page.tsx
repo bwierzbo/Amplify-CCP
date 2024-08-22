@@ -16,12 +16,12 @@ export default async function Page() {
   }
 
   // Log all trees to the console
-  console.log('All trees:', JSON.stringify(trees, null, 2));
+  //console.log('All trees:', JSON.stringify(trees, null, 2));
 
 
 
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-screen overflow-hidden">
       <OrchardMap satelliteImageUrl={satelliteImageUrl} trees={trees} />
     </div>
   );
