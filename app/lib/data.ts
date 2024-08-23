@@ -758,67 +758,71 @@ export async function fetchAppleVarieties(): Promise<AppleVarieties[]> {
 
 export async function fetchTrees(): Promise<Tree[]> {
   try {
-    const { data, errors } = await client.models.Tree.list();
-    if (errors) {
-      console.error('Error fetching trees:', errors);
-      throw new Error('Error fetching tree data.');
+    let allTrees: Tree[] = [];
+    let nextToken: string | undefined;
+
+    do {
+      const { data, errors, nextToken: newNextToken } = await client.models.Tree.list({ limit: 1000, nextToken });
+      if (errors) {
+        console.error('Error fetching trees:', errors);
+        throw new Error('Error fetching tree data.');
+      }
+      
+      allTrees = allTrees.concat(data.map(tree => ({
+        id: tree.id ?? '',
+        variety: tree.variety ?? '',
+        rootstock: tree.rootstock ?? '',
+        yearPlanted: tree.yearPlanted ?? 0,
+        row: tree.row ?? 0,
+        column: tree.column ?? 0,
+        status: (tree.status as 'healthy' | 'diseased' | 'treated' | 'removed' | null) ?? null,
+        lastPruned: tree.lastPruned ? new Date(tree.lastPruned) : null,
+        lastFertilized: tree.lastFertilized ? new Date(tree.lastFertilized) : null,
+        lastPesticide: tree.lastPesticide ? new Date(tree.lastPesticide) : null,
+        notes: tree.notes ?? null,
+        yield: tree.yield ?? null,
+        lastHarvestDate: tree.lastHarvestDate ? new Date(tree.lastHarvestDate) : null,
+      })));
+
+      nextToken = newNextToken as string | undefined;
+    } while (nextToken);
+
+    if (allTrees.length === 0) {
+      return [
+        {
+          id: '1',
+          variety: 'Cox Orange Pippin',
+          rootstock: 'M9',
+          yearPlanted: 2020,
+          row: 1,
+          column: 1,
+          status: 'healthy',
+          lastPruned: null,
+          lastFertilized: null,
+          lastPesticide: null,
+          notes: null,
+          yield: null,
+          lastHarvestDate: null,
+        },
+        {
+          id: '2',
+          variety: 'Northern Spy',
+          rootstock: 'M26',
+          yearPlanted: 2021,
+          row: 1,
+          column: 2,
+          status: 'healthy',
+          lastPruned: null,
+          lastFertilized: null,
+          lastPesticide: null,
+          notes: null,
+          yield: null,
+          lastHarvestDate: null,
+        },
+      ];
     }
-    
-    // If no trees are returned from the database, return sample data
-        // If no trees are returned from the database, return sample data
-        if (data.length === 0) {
-          return [
-            {
-              id: '1',
-              variety: 'Cox Orange Pippin',
-              rootstock: 'M9',
-              yearPlanted: 2020,
-              row: 1,
-              column: 1,
-              status: 'healthy',
-              lastPruned: null,
-              lastFertilized: null,
-              lastPesticide: null,
-              notes: null,
-              yield: null,
-              lastHarvestDate: null,
 
-            },
-            {
-              id: '2',
-              variety: 'Northern Spy',
-              rootstock: 'M26',
-              yearPlanted: 2021,
-              row: 1,
-              column: 2,
-              status: 'healthy',
-              lastPruned: null,
-              lastFertilized: null,
-              lastPesticide: null,
-              notes: null,
-              yield: null,
-              lastHarvestDate: null,
-
-            },
-          ];
-        }
-    
-    return data.map(tree => ({
-      id: tree.id ?? '',
-      variety: tree.variety,
-      rootstock: tree.rootstock,
-      yearPlanted: tree.yearPlanted,
-      row: tree.row,
-      column: tree.column,
-      status: tree.status as 'healthy' | 'diseased' | 'treated' | 'removed' | null,
-      lastPruned: tree.lastPruned ? new Date(tree.lastPruned) : null,
-      lastFertilized: tree.lastFertilized ? new Date(tree.lastFertilized) : null,
-      lastPesticide: tree.lastPesticide ? new Date(tree.lastPesticide) : null,
-      notes: tree.notes ?? null,
-      yield: tree.yield ?? null,
-      lastHarvestDate: tree.lastHarvestDate ? new Date(tree.lastHarvestDate) : null,
-
-    }));
+    return allTrees;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch tree data.');

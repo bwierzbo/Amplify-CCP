@@ -12,6 +12,7 @@ interface OrchardMapProps {
 }
 
 export default function OrchardMap({ satelliteImageUrl, trees }: OrchardMapProps) {
+  console.log('Trees:', trees);
   const [selectedTree, setSelectedTree] = useState<Tree | null>(null);
   const [updatedStatus, setUpdatedStatus] = useState<'healthy' | 'diseased' | 'treated' | 'removed'>('healthy');
 
