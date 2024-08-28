@@ -2,7 +2,7 @@ import { lusitana } from '@/app/ui/fonts';
 import { Metadata } from 'next';
 import OrchardMap from '@/app/ui/orchardmanagement/orchardmap';
 import { fetchTrees } from '@/app/lib/data';
-import { importTrees, deleteAllTrees } from '@/import';
+//import { importTrees, deleteAllTrees } from '@/import';
 
 
 
@@ -15,7 +15,7 @@ export default async function Page() {
   let trees = await fetchTrees();
   
   if (!trees || trees.length === 2) {
-    await importTrees();
+    //await importTrees();
     trees = await fetchTrees();
   }
 

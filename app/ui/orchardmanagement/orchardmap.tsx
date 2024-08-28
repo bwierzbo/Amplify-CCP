@@ -15,20 +15,60 @@ export default function OrchardMap({ satelliteImageUrl, trees }: OrchardMapProps
   console.log('Trees:', trees);
   const [selectedTree, setSelectedTree] = useState<Tree | null>(null);
   const [updatedStatus, setUpdatedStatus] = useState<'healthy' | 'diseased' | 'treated' | 'removed'>('healthy');
+  const [colorMode, setColorMode] = useState<'variety' | 'status'>('variety');
 
   const treeColorMap: { [key: string]: string } = {
     'Cox Orange Pippin': 'bg-orange-500',
-    'Northern Spy': 'bg-red-500',
-    'Gala': 'bg-yellow-500',
-    'Fuji': 'bg-pink-500',
-    'Honeycrisp': 'bg-blue-500',
-    'Granny Smith': 'bg-green-500',
-    'Braeburn': 'bg-purple-500',
-    'Golden Delicious': 'bg-orange-500',
-    'Red Delicious': 'bg-red-500',
-    'Pink Lady': 'bg-pink-500',
-    // Add more varieties and colors as needed
-    'default': 'bg-green-500', // Default color for unknown varieties
+    'Virginia Hewes Crab': 'bg-red-500',
+    'Northern Spy': 'bg-yellow-500',
+    'Muscat de Bernay': 'bg-pink-500',
+    'Chisel Jersey': 'bg-blue-500',
+    'Yarlington Mill': 'bg-green-500',
+    'Arkansas Black': 'bg-purple-500',
+    'Oxford Black': 'bg-indigo-500',
+    'Golden Russet': 'bg-amber-500',
+    'Unknown': 'bg-gray-500',
+    'Baeburn': 'bg-lime-500',
+    'Whitney Crab': 'bg-cyan-500',
+    'Amere de Berthcourt': 'bg-fuchsia-500',
+    'Harry Masters Jersey': 'bg-rose-500',
+    "Ashmead's Kernel": 'bg-teal-500',
+    'Cineterre': 'bg-emerald-500',
+    'Mishelin': 'bg-sky-500',
+    "Tremlett's Bitter": 'bg-violet-500',
+    'Sweet Coppin': 'bg-orange-400',
+    "Tompkins King": 'bg-red-400',
+    'Lambrook Pippin': 'bg-yellow-400',
+    'Belle de Jardin': 'bg-pink-400',
+    'Champlain': 'bg-blue-400',
+    'Nehou': 'bg-green-400',
+    'Red Vein Crab': 'bg-purple-400',
+    'Redfield': 'bg-indigo-400',
+    'Isle of Wight': 'bg-amber-400',
+    'Stoke Red': 'bg-lime-400',
+    'Harrison': 'bg-cyan-400',
+    'Dabinette': 'bg-fuchsia-400',
+    'Kingston Black': 'bg-rose-400',
+    'Brown Snout': 'bg-teal-400',
+    'Pudget Spice': 'bg-emerald-400',
+    'Antonovka': 'bg-sky-400',
+    'default': 'bg-gray-500',
+  };
+
+  const statusColorMap: { [key: string]: string } = {
+    'Healthy': 'bg-green-500',
+    'Diseased': 'bg-red-500',
+    'Treated': 'bg-yellow-500',
+    'Removed': 'bg-gray-500',
+    'default': 'bg-blue-500',
+  };
+
+  const getTreeColor = (tree: Tree) => {
+    if (colorMode === 'variety') {
+      return treeColorMap[tree.variety] || treeColorMap['default'];
+    } else {
+      return statusColorMap[tree.status || 'default'];
+    }
   };
 
   const handleTreeClick = (tree: Tree) => {
@@ -55,6 +95,10 @@ export default function OrchardMap({ satelliteImageUrl, trees }: OrchardMapProps
     }
   };
 
+  const toggleColorMode = () => {
+    setColorMode(prevMode => prevMode === 'variety' ? 'status' : 'variety');
+  };
+
   return (
     <div className="w-full h-screen overflow-hidden flex justify-center">
       <TransformWrapper
@@ -75,7 +119,7 @@ export default function OrchardMap({ satelliteImageUrl, trees }: OrchardMapProps
             {trees.map((tree) => (
               <button
                 key={tree.id}
-                className={`absolute w-2 h-2 rounded-full hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 ${treeColorMap[tree.variety] || treeColorMap['default']}`}
+                className={`absolute w-2 h-2 rounded-full hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 ${getTreeColor(tree)}`}
                 style={{
                   left: `${41 + (tree.column / 15) * 13.6}%`,
                   top: `${29.4 + (tree.row / 32) * 36.5}%`,
@@ -129,14 +173,32 @@ export default function OrchardMap({ satelliteImageUrl, trees }: OrchardMapProps
           )}
         </div>
       )}
-      <div className="absolute top-4 right-4 bg-white p-2 rounded-lg shadow-md">
-        <h3 className="text-sm font-semibold mb-2">Tree Varieties</h3>
-        {Object.entries(treeColorMap).map(([variety, color]) => (
-          <div key={variety} className="flex items-center mb-1">
-            <div className={`w-3 h-3 ${color} rounded-full mr-2`}></div>
-            <span className="text-xs">{variety}</span>
-          </div>
-        ))}
+      <div 
+        className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-md max-h-96 overflow-y-auto cursor-pointer hover:bg-gray-100 transition-colors"
+        onClick={toggleColorMode}
+      >
+        <h3 className="text-sm font-semibold mb-2">
+          {colorMode === 'variety' ? 'Tree Varieties' : 'Tree Statuses'}
+        </h3>
+        {colorMode === 'variety' ? (
+          Object.entries(treeColorMap).map(([variety, color]) => (
+            variety !== 'default' && (
+              <div key={variety} className="flex items-center mb-1">
+                <div className={`w-3 h-3 ${color} rounded-full mr-2`}></div>
+                <span className="text-xs">{variety}</span>
+              </div>
+            )
+          ))
+        ) : (
+          Object.entries(statusColorMap).map(([status, color]) => (
+            status !== 'default' && (
+              <div key={status} className="flex items-center mb-1">
+                <div className={`w-3 h-3 ${color} rounded-full mr-2`}></div>
+                <span className="text-xs">{status}</span>
+              </div>
+            )
+          ))
+        )}
       </div>
     </div>
   );

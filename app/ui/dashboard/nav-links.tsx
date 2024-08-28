@@ -40,8 +40,8 @@ const links: NavLinkType[] = [
     href: '/dashboard/orchardmanagement',
     icon: CogIcon,
     children: [
+      { name: 'Orchard Management', href: '/dashboard/orchardmanagement/orchardmanagement', icon: ClipboardDocumentIcon},
       { name: 'Apple Varieties', href: '/dashboard/orchardmanagement/applevarieties', icon: SunIcon },
-      { name: 'Havest Management', href: '/dashboard/orchardmanagement/harvestmanagement', icon: ClipboardDocumentIcon},
       { name: 'Maintenance', href: '/dashboard/orchardmanagement/maintenance', icon: WrenchIcon},
     ],
   },
@@ -61,6 +61,7 @@ const links: NavLinkType[] = [
     href: '/dashboard/sales',
     icon: CurrencyDollarIcon,
     children: [
+      { name: 'Dashboard', href: '/dashboard/sales/dashboard', icon: ClipboardDocumentIcon },
       { name: 'Customers', href: '/dashboard/sales/customers', icon: UserGroupIcon },
       { name: 'Invoices', href: '/dashboard/sales/invoices', icon: DocumentTextIcon },
     ],
@@ -87,11 +88,13 @@ function NavLink({
   link,
   isOpen,
   onClick,
+  onLinkClick,
   activePath,
 }: {
   link: NavLinkType;
   isOpen: boolean;
   onClick: () => void;
+  onLinkClick: () => void;
   activePath: string;
 }) {
   const LinkIcon = link.icon;
@@ -109,25 +112,29 @@ function NavLink({
     <div className="w-full">
       <div
         className="flex items-center justify-between w-full"
-        onClick={link.children ? onClick : undefined}
+        onClick={onClick}
       >
         <Link
-          href={link.href}
+          href={link.children ? '#' : link.href}
           className={clsx(
-            'flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3',
-            'transition-all duration-300 ease-in-out', // Add transition
+            'flex w-full items-center justify-start gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600',
+            'transition-all duration-300 ease-in-out',
             {
               'bg-sky-100 text-blue-600': isActive,
             }
           )}
-          onClick={() => !link.children && onClick()}
+          onClick={() => {
+            if (!link.children) {
+              onLinkClick();
+            }
+          }}
         >
           {LinkIcon && <LinkIcon className="w-6" />}
-          <p className="hidden md:block">{link.name}</p>
+          <span className="flex-grow">{link.name}</span>
           {link.children && (
             <ChevronDownIcon
               className={clsx(
-                'w-5 transition-transform duration-300 ease-in-out', // Add transition
+                'w-5 transition-transform duration-300 ease-in-out',
                 { 'rotate-180': isOpen }
               )}
             />
@@ -144,8 +151,9 @@ function NavLink({
             <NavLink
               key={child.name}
               link={child}
-              isOpen={activePath.startsWith(child.href)}
-              onClick={onClick}
+              isOpen={false}
+              onClick={() => {}}
+              onLinkClick={onLinkClick}
               activePath={activePath}
             />
           ))}
@@ -155,12 +163,16 @@ function NavLink({
   );
 }
 
-export default function NavLinks() {
+export default function NavLinks({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) {
   const pathname = usePathname();
   const [openTab, setOpenTab] = useState<string | null>(null);
 
   const handleToggle = (tabName: string) => {
     setOpenTab((prevOpenTab) => (prevOpenTab === tabName ? null : tabName));
+  };
+
+  const handleLinkClick = () => {
+    setIsOpen(false);
   };
 
   return (
@@ -169,8 +181,9 @@ export default function NavLinks() {
         <NavLink
           key={link.name}
           link={link}
-          isOpen={openTab === link.name || pathname.startsWith(link.href)}
+          isOpen={openTab === link.name}
           onClick={() => handleToggle(link.name)}
+          onLinkClick={handleLinkClick}
           activePath={pathname}
         />
       ))}
